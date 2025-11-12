@@ -1,0 +1,11 @@
+---
+description: Code Standards for the Monkeybun Backend Service
+globs: *
+alwaysApply: true
+---
+
+# Code Standards for the Monkeybun Backend Service
+
+- Use uv for package management.
+- Do not tightly couple dependencies in classes. Always use dependency injection when you can.
+- If a module has dependencies, they should be in the dependency file for that module.
