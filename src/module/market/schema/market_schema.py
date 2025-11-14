@@ -122,8 +122,21 @@ class MarketSearchFilters(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
+class MarketSearchResponse(BaseModel):
+    id: UUID
+    market_name: str
+    location_text: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    formatted_address: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    logo_url: Optional[str] = None
+    is_published: bool
+
+
 class MarketListResponse(BaseModel):
-    markets: list[MarketResponse]
+    markets: list[MarketSearchResponse]
     total: int
     limit: int
     offset: int

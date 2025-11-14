@@ -12,6 +12,7 @@ from src.module.market.schema.market_schema import (
     MarketListResponse,
     MarketResponse,
     MarketSearchFilters,
+    MarketSearchResponse,
     MarketUpdateRequest,
 )
 
@@ -155,8 +156,25 @@ class MarketService:
 
         markets = db.exec(query).all()
 
+        market_responses = []
+        for market in markets:
+            market_responses.append(
+                MarketSearchResponse(
+                    id=market.id,
+                    market_name=market.market_name,
+                    location_text=market.location_text,
+                    city=market.city,
+                    country=market.country,
+                    formatted_address=market.formatted_address,
+                    start_date=market.start_date,
+                    end_date=market.end_date,
+                    logo_url=market.logo_url,
+                    is_published=market.is_published,
+                )
+            )
+
         return MarketListResponse(
-            markets=[MarketResponse.model_validate(market) for market in markets],
+            markets=market_responses,
             total=total,
             limit=filters.limit,
             offset=filters.offset,

@@ -12,7 +12,6 @@ from src.module.auth.dependency.auth_dependency import get_current_user
 from src.module.market.dependency.market_dependency import MarketServiceDep
 from src.module.market.schema.market_schema import (
     MarketCreateRequest,
-    MarketImageCreateRequest,
     MarketImageResponse,
     MarketImageUpdateRequest,
     MarketSearchFilters,
@@ -122,83 +121,6 @@ def delete_market(
     logger.info(f"Deleting market {market_id} by user {current_user}")
     market_service.delete_market(db, market_id, current_user)
     return Response.no_content()
-
-
-@router.post("/{market_id}/images", status_code=Status.CREATED)
-def add_market_image(
-    market_id: UUID,
-    request: MarketImageCreateRequest,
-    current_user: Annotated[UUID, Depends(get_current_user)],
-    db: DatabaseDep,
-) -> StandardResponse:
-    logger.info(f"Adding image to market {market_id} by user {current_user}")
-    market = db.get(Market, market_id)
-    if not market:
-        raise HTTPException(status_code=404, detail="Market not found")
-
-    if market.organizer_user_id != current_user:
-        raise HTTPException(
-            status_code=403,
-            detail="You do not have permission to add images to this market",
-        )
-
-    from sqlmodel import func, select
-
-    max_sort_order = (
-        db.exec(
-            select(func.max(MarketImage.sort_order)).where(
-                MarketImage.market_id == market_id
-            )
-        ).scalar()
-        or -1
-    )
-
-    market_image = MarketImage(
-        market_id=market_id,
-        image_url=request.image_url,
-        caption=request.caption,
-        sort_order=request.sort_order
-        if request.sort_order is not None
-        else max_sort_order + 1,
-    )
-    db.add(market_image)
-    db.commit()
-    db.refresh(market_image)
-
-    return Response.success(
-        message="Image added successfully",
-        data=MarketImageResponse.model_validate(market_image.model_dump()).model_dump(
-            mode="json"
-        ),
-        status_code=Status.CREATED,
-    )
-
-
-@router.get("/{market_id}/images")
-def get_market_images(
-    market_id: UUID,
-    db: DatabaseDep,
-) -> StandardResponse:
-    logger.info(f"Retrieving images for market {market_id}")
-    market = db.get(Market, market_id)
-    if not market:
-        raise HTTPException(status_code=404, detail="Market not found")
-
-    from sqlmodel import select
-
-    images = db.exec(
-        select(MarketImage)
-        .where(MarketImage.market_id == market_id)
-        .order_by(MarketImage.sort_order.asc().nulls_last())
-    ).all()
-
-    return Response.success(
-        message="Images retrieved successfully",
-        data=[
-            MarketImageResponse.model_validate(img.model_dump()).model_dump(mode="json")
-            for img in images
-        ],
-    )
 
 
 @router.put("/{market_id}/images/{image_id}")
