@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine
 
 from src.common.config import settings
-from src.database.postgres.models.db_models import Resume  # noqa
 
 
 class PostgresClient:

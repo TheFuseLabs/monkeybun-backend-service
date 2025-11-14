@@ -1,0 +1,129 @@
+from datetime import date, datetime
+from typing import Any, Dict, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+
+class MarketCreateRequest(BaseModel):
+    market_name: str
+    contact_first_name: str
+    contact_last_name: str
+    email: str
+    phone: Optional[str] = None
+    google_place_id: str
+    location_text: str
+    aesthetic: Optional[str] = None
+    market_size: str
+    target_vendors: Optional[str] = None
+    optional_rules: Optional[str] = None
+    contract_url: Optional[str] = None
+    description: str
+    start_date: date
+    end_date: date
+    application_deadline: datetime
+    is_published: bool = False
+    email_package_url: Optional[str] = None
+    payment_instructions: str
+    application_form: Dict[str, Any]
+    logo_url: Optional[str] = None
+    image_urls: Optional[list[str]] = None
+
+
+class MarketUpdateRequest(BaseModel):
+    market_name: Optional[str] = None
+    contact_first_name: Optional[str] = None
+    contact_last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    google_place_id: Optional[str] = None
+    location_text: Optional[str] = None
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    target_vendors: Optional[str] = None
+    optional_rules: Optional[str] = None
+    contract_url: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    application_deadline: Optional[datetime] = None
+    is_published: Optional[bool] = None
+    email_package_url: Optional[str] = None
+    payment_instructions: Optional[str] = None
+    application_form: Optional[Dict[str, Any]] = None
+    logo_url: Optional[str] = None
+    image_urls: Optional[list[str]] = None
+
+
+class MarketImageResponse(BaseModel):
+    id: UUID
+    market_id: UUID
+    image_url: str
+    caption: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
+class MarketImageCreateRequest(BaseModel):
+    image_url: str
+    caption: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
+class MarketImageUpdateRequest(BaseModel):
+    caption: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
+class MarketResponse(BaseModel):
+    id: UUID
+    organizer_user_id: UUID
+    market_name: str
+    contact_first_name: Optional[str] = None
+    contact_last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location_text: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    google_place_id: Optional[str] = None
+    formatted_address: Optional[str] = None
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    target_vendors: Optional[str] = None
+    optional_rules: Optional[str] = None
+    contract_url: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    application_deadline: Optional[datetime] = None
+    is_published: bool
+    email_package_url: Optional[str] = None
+    payment_instructions: Optional[str] = None
+    application_form: Optional[Dict[str, Any]] = None
+    logo_url: Optional[str] = None
+    created_at: datetime
+    images: Optional[list[MarketImageResponse]] = None
+
+
+class MarketSearchFilters(BaseModel):
+    city: Optional[str] = None
+    country: Optional[str] = None
+    is_published: Optional[bool] = None
+    start_date_from: Optional[date] = None
+    start_date_to: Optional[date] = None
+    end_date_from: Optional[date] = None
+    end_date_to: Optional[date] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    radius_km: Optional[float] = Field(None, ge=0, le=1000)
+    limit: int = Field(default=20, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
+
+
+class MarketListResponse(BaseModel):
+    markets: list[MarketResponse]
+    total: int
+    limit: int
+    offset: int

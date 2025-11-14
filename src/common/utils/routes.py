@@ -5,10 +5,14 @@ from fastapi.routing import APIRoute
 
 from src.common.logger import logger
 from src.module.auth.controller.auth_controller import router as auth_router
+from src.module.market.controller.market_controller import router as market_router
+from src.module.upload.controller.upload_controller import router as upload_router
 
 
 def include_routers(app: FastAPI) -> None:
     app.include_router(auth_router)
+    app.include_router(market_router)
+    app.include_router(upload_router)
 
     api_router = APIRouter(prefix="/api", tags=["api"])
     app.include_router(api_router)

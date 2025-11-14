@@ -86,7 +86,6 @@ class Market(SQLModel, table=True):
     market_size: Optional[str] = None
     target_vendors: Optional[str] = None
     optional_rules: Optional[str] = None
-    additional_supplies_q: Optional[str] = None
     contract_url: Optional[str] = None
     description: Optional[str] = None
     start_date: Optional[date] = None
@@ -99,6 +98,7 @@ class Market(SQLModel, table=True):
         default=None,
         sa_column=Column(JSONB),
     )
+    logo_url: Optional[str] = None
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(server_default=func.now()),
@@ -246,3 +246,23 @@ class ReviewImage(SQLModel, table=True):
     )
     image_url: str
     caption: Optional[str] = None
+
+
+class PendingImage(SQLModel, table=True):
+    __tablename__ = "pending_images"
+
+    id: UUID = Field(
+        default_factory=uuid4,
+        sa_column=Column(
+            PGUUID(as_uuid=True),
+            primary_key=True,
+            server_default=func.gen_random_uuid(),
+        ),
+    )
+    user_id: UUID = Field(sa_column=Column(PGUUID(as_uuid=True)))
+    image_url: str
+    s3_key: str
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(server_default=func.now()),
+    )
