@@ -26,7 +26,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 async def not_found_exception_handler(request: Request, exc: HTTPException):
-    logger.warning(f"Route not found: {request.method}")
+    logger.warning(f"Route not found: {request.method} {request.url.path}")
 
     return Response.error(
         message="The requested resource was not found",
@@ -40,7 +40,26 @@ async def not_found_exception_handler(request: Request, exc: HTTPException):
 
 async def http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code == 404:
-        return await not_found_exception_handler(request, exc)
+        detail = exc.detail if exc.detail else "The requested resource was not found"
+        if detail == "Not Found" or detail == "":
+            return await not_found_exception_handler(request, exc)
+
+        logger.error(f"HTTP 404 Error: {detail}")
+
+        error_details = {
+            "type": "HTTPException",
+            "status_code": exc.status_code,
+            "detail": detail,
+        }
+
+        return Response.error(
+            message=str(detail),
+            data={
+                "error_code": "NOT_FOUND",
+                "details": error_details,
+            },
+            status_code=exc.status_code,
+        )
 
     logger.error(f"HTTP Error: {str(exc)}")
 

@@ -1,12 +1,37 @@
 from datetime import date, datetime, timezone
+from enum import Enum
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
 from sqlalchemy import CheckConstraint, Column, ForeignKey, Index, UniqueConstraint
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.sql import func
 from sqlmodel import Field, SQLModel
+
+
+class ApplicationStatus(str, Enum):
+    applied = "applied"
+    accepted = "accepted"
+    declined = "declined"
+    confirmed = "confirmed"
+
+
+class PaymentMethod(str, Enum):
+    bank_transfer = "bank_transfer"
+    credit_card = "credit_card"
+    paypal = "paypal"
+    check = "check"
+    cash = "cash"
+    other = "other"
+
+
+class PaymentStatus(str, Enum):
+    pending = "pending"
+    paid = "paid"
+    failed = "failed"
+    refunded = "refunded"
 
 
 class Business(SQLModel, table=True):
@@ -130,6 +155,11 @@ class MarketImage(SQLModel, table=True):
 
 class Application(SQLModel, table=True):
     __tablename__ = "applications"
+    __table_args__ = (
+        UniqueConstraint(
+            "market_id", "business_id", name="applications_market_id_business_id_key"
+        ),
+    )
 
     id: UUID = Field(
         default_factory=uuid4,
@@ -149,7 +179,10 @@ class Application(SQLModel, table=True):
             PGUUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE")
         )
     )
-    status: str = Field(default="applied")
+    status: ApplicationStatus = Field(
+        default=ApplicationStatus.applied,
+        sa_column=Column(SQLEnum(ApplicationStatus, native_enum=False, length=50)),
+    )
     applied_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(server_default=func.now()),
@@ -159,9 +192,15 @@ class Application(SQLModel, table=True):
     confirmed_at: Optional[datetime] = None
     declined_at: Optional[datetime] = None
     notes_for_org: Optional[str] = None
-    internal_tags: Optional[str] = None
-    payment_method: Optional[str] = None
-    payment_status: Optional[str] = None
+    rejection_reason: Optional[str] = None
+    payment_method: Optional[PaymentMethod] = Field(
+        default=None,
+        sa_column=Column(SQLEnum(PaymentMethod, native_enum=False, length=50)),
+    )
+    payment_status: Optional[PaymentStatus] = Field(
+        default=None,
+        sa_column=Column(SQLEnum(PaymentStatus, native_enum=False, length=50)),
+    )
     answers: Optional[Dict[str, Any]] = Field(
         default=None,
         sa_column=Column(JSONB),
