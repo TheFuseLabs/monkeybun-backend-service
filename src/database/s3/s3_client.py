@@ -5,7 +5,7 @@ from botocore.exceptions import ClientError, NoCredentialsError
 from fastapi import HTTPException
 
 from src.common.config import settings
-from src.common.constants import S3_BUCKET_NAME
+from src.common.constants import S3_PUBLIC_BUCKET_NAME
 from src.common.logger import logger
 
 
@@ -44,7 +44,7 @@ class S3Client:
             if content_type:
                 extra_args["ContentType"] = content_type
 
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             self.s3_client.put_object(
                 Bucket=bucket, Key=file_key, Body=file_content, **extra_args
             )
@@ -53,7 +53,7 @@ class S3Client:
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchBucket":
-                bucket = bucket_name or S3_BUCKET_NAME
+                bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
                 raise HTTPException(
                     status_code=404, detail=f"Bucket not found: {bucket}"
                 )
@@ -69,14 +69,14 @@ class S3Client:
         self, file_key: str, bucket_name: Optional[str] = None
     ) -> str:
         try:
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             self.s3_client.delete_object(Bucket=bucket, Key=file_key)
 
             return f"File deleted successfully: {file_key}"
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchBucket":
-                bucket = bucket_name or S3_BUCKET_NAME
+                bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
                 raise HTTPException(
                     status_code=404, detail=f"Bucket not found: {bucket}"
                 )
@@ -100,7 +100,7 @@ class S3Client:
         bucket_name: Optional[str] = None,
     ) -> str:
         try:
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             await self.delete_file(file_key, bucket)
             await self.upload_file(file, file_key, content_type, bucket)
             return f"File updated successfully: {file_key}"
@@ -114,14 +114,14 @@ class S3Client:
     ) -> bytes:
         try:
             logger.debug(f"Downloading file from bucket: {bucket_name or 'default'}")
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             response = self.s3_client.get_object(Bucket=bucket, Key=file_key)
 
             return response["Body"].read()
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchBucket":
-                bucket = bucket_name or S3_BUCKET_NAME
+                bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
                 raise HTTPException(
                     status_code=404, detail=f"Bucket not found: {bucket}"
                 )
@@ -142,14 +142,14 @@ class S3Client:
     ) -> bytes:
         try:
             logger.debug(f"Downloading file from bucket: {bucket_name or 'default'}")
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             response = self.s3_client.get_object(Bucket=bucket, Key=file_key)
 
             return response["Body"].read()
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchBucket":
-                bucket = bucket_name or S3_BUCKET_NAME
+                bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
                 raise HTTPException(
                     status_code=404, detail=f"Bucket not found: {bucket}"
                 )
@@ -169,13 +169,13 @@ class S3Client:
         self, file_key: str, bucket_name: Optional[str] = None
     ) -> bool:
         try:
-            bucket = bucket_name or S3_BUCKET_NAME
+            bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
             self.s3_client.head_object(Bucket=bucket, Key=file_key)
             return True
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchBucket":
-                bucket = bucket_name or S3_BUCKET_NAME
+                bucket = bucket_name or S3_PUBLIC_BUCKET_NAME
                 raise HTTPException(
                     status_code=404, detail=f"Bucket not found: {bucket}"
                 )

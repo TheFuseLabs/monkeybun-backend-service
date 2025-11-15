@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func
 from sqlmodel import Session, select
 
+from src.common.utils.s3_url import convert_s3_url_to_public_url
 from src.database.postgres.models.db_models import Business, BusinessImage, PendingImage
 from src.module.business.schema.business_schema import (
     BusinessCreateRequest,
@@ -213,12 +214,13 @@ class BusinessService:
         business_responses = []
         for business in businesses:
             review_count, average_rating = review_stats.get(business.id, (0, None))
+            logo_url = convert_s3_url_to_public_url(business.logo_url) if business.logo_url else None
             business_responses.append(
                 BusinessSearchResponse(
                     id=business.id,
                     shop_name=business.shop_name,
                     category=business.category,
-                    logo_url=business.logo_url,
+                    logo_url=logo_url,
                     review_count=review_count,
                     average_rating=average_rating,
                 )
@@ -252,8 +254,16 @@ class BusinessService:
         )
 
         business_dict = business.model_dump()
+        if business_dict.get("logo_url"):
+            business_dict["logo_url"] = convert_s3_url_to_public_url(business_dict["logo_url"])
         business_dict["images"] = [
-            BusinessImageResponse.model_validate(img.model_dump()) for img in images
+            BusinessImageResponse(
+                id=img.id,
+                business_id=img.business_id,
+                image_url=convert_s3_url_to_public_url(img.image_url),
+                caption=img.caption,
+                sort_order=img.sort_order,
+            ) for img in images
         ]
         business_dict["review_count"] = review_count
         business_dict["average_rating"] = average_rating

@@ -7,7 +7,7 @@
   "market_name": "Summer Artisan Market",
   "contact_first_name": "Jane",
   "contact_last_name": "Smith",
-  "email": "jane@summermarket.com",
+  "email": "aryankhurana1511@gmail.com",
   "phone": "+1234567890",
   "google_place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
   "location_text": "Central Park, New York",
@@ -20,7 +20,7 @@
   "start_date": "2024-06-01",
   "end_date": "2024-08-31",
   "application_deadline": "2024-05-15T23:59:59Z",
-  "is_published": false,
+  "is_published": true,
   "email_package_url": "https://example.com/email-package.pdf",
   "payment_instructions": "Payment via bank transfer or PayPal",
   "application_form": {
@@ -55,12 +55,12 @@
       }
     ]
   },
-  "logo_url": "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg",
+  "logo_url": "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/c253e630-3969-4b3e-99ee-c5af5bf1e4cf.jpeg",
   "image_urls": [
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg",
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/b763bc3e-584e-404b-9002-2e83f275603a.jpeg",
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/caaf4632-58bb-420f-8996-a45101d00b20.jpeg",
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/3be983e8-9046-41ef-a45c-5bb943024ec3.jpeg"
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/0ad0ee38-e0c1-4c7f-ae9b-bad7ae6337e8.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/1673cebc-b07a-42f4-9613-777dc84da424.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/c6adfcfd-0331-4ffe-b5ed-d52e37e9f64b.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/612bdf16-7c5a-40be-9c20-d06767c2dbaa.jpeg"
   ]
 }
 ```
@@ -239,11 +239,11 @@ No request body. Use path parameters:
   "category": "Jewelry & Accessories",
   "average_price_range": "$50-$200",
   "description": "Handcrafted artisan jewelry featuring unique designs and sustainable materials",
-  "logo_url": "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg",
+  "logo_url": "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/c253e630-3969-4b3e-99ee-c5af5bf1e4cf.jpeg",
   "image_urls": [
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg",
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/b763bc3e-584e-404b-9002-2e83f275603a.jpeg",
-    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/caaf4632-58bb-420f-8996-a45101d00b20.jpeg"
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/0ad0ee38-e0c1-4c7f-ae9b-bad7ae6337e8.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/1673cebc-b07a-42f4-9613-777dc84da424.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-public/market/c6adfcfd-0331-4ffe-b5ed-d52e37e9f64b.jpeg"
   ]
 }
 ```

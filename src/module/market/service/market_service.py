@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func, or_
 from sqlmodel import Session, select
 
+from src.common.utils.s3_url import convert_s3_url_to_public_url
 from src.database.postgres.models.db_models import Market, MarketImage, PendingImage
 from src.downstream.google.google_places_client import GooglePlacesClient
 from src.module.market.schema.market_schema import (
@@ -168,6 +169,11 @@ class MarketService:
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            logo_url = (
+                convert_s3_url_to_public_url(market.logo_url)
+                if market.logo_url
+                else None
+            )
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -178,7 +184,7 @@ class MarketService:
                     formatted_address=market.formatted_address,
                     start_date=market.start_date,
                     end_date=market.end_date,
-                    logo_url=market.logo_url,
+                    logo_url=logo_url,
                     is_published=market.is_published,
                     review_count=review_count,
                     average_rating=average_rating,
@@ -293,8 +299,19 @@ class MarketService:
         )
 
         market_dict = market.model_dump()
+        if market_dict.get("logo_url"):
+            market_dict["logo_url"] = convert_s3_url_to_public_url(
+                market_dict["logo_url"]
+            )
         market_dict["images"] = [
-            MarketImageResponse.model_validate(img.model_dump()) for img in images
+            MarketImageResponse(
+                id=img.id,
+                market_id=img.market_id,
+                image_url=convert_s3_url_to_public_url(img.image_url),
+                caption=img.caption,
+                sort_order=img.sort_order,
+            )
+            for img in images
         ]
         market_dict["review_count"] = review_count
         market_dict["average_rating"] = average_rating
@@ -326,6 +343,11 @@ class MarketService:
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            logo_url = (
+                convert_s3_url_to_public_url(market.logo_url)
+                if market.logo_url
+                else None
+            )
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -336,7 +358,7 @@ class MarketService:
                     formatted_address=market.formatted_address,
                     start_date=market.start_date,
                     end_date=market.end_date,
-                    logo_url=market.logo_url,
+                    logo_url=logo_url,
                     is_published=market.is_published,
                     review_count=review_count,
                     average_rating=average_rating,

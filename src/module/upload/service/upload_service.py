@@ -4,8 +4,8 @@ from uuid import UUID, uuid4
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from src.common.config import settings
-from src.common.constants import S3_BUCKET_NAME
+from src.common.constants import S3_PUBLIC_BUCKET_NAME
+from src.common.utils.s3_url import get_public_image_url
 from src.database.postgres.models.db_models import PendingImage
 from src.database.s3.s3_client import S3Client
 from src.module.upload.schema.upload_schema import (
@@ -59,11 +59,10 @@ class UploadService:
             file.file,
             file_key,
             content_type=file.content_type,
-            bucket_name=S3_BUCKET_NAME,
+            bucket_name=S3_PUBLIC_BUCKET_NAME,
         )
 
-        endpoint = settings.S3_ENPOINT.rstrip("/")
-        image_url = f"{endpoint}/{S3_BUCKET_NAME}/{file_key}"
+        image_url = get_public_image_url(file_key)
 
         pending_image = PendingImage(
             user_id=user_id, image_url=image_url, s3_key=file_key
@@ -107,11 +106,10 @@ class UploadService:
                     file.file,
                     file_key,
                     content_type=file.content_type,
-                    bucket_name=S3_BUCKET_NAME,
+                    bucket_name=S3_PUBLIC_BUCKET_NAME,
                 )
 
-                endpoint = settings.S3_ENPOINT.rstrip("/")
-                image_url = f"{endpoint}/{S3_BUCKET_NAME}/{file_key}"
+                image_url = get_public_image_url(file_key)
 
                 pending_image = PendingImage(
                     user_id=user_id, image_url=image_url, s3_key=file_key
