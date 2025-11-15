@@ -1,508 +1,1145 @@
 {
-	"info": {
-		"_postman_id": "ae92dc03-3e11-40fc-afae-d3eb3a714efd",
-		"name": "Monkeybun Backend Service",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "29598765",
-		"_collection_link": "https://thefuselabs.postman.co/workspace/FuseLabs~bc4d0987-5c33-4e3d-bb2d-5a6c792741af/collection/29598765-ae92dc03-3e11-40fc-afae-d3eb3a714efd?action=share&source=collection_link&creator=29598765"
-	},
-	"item": [
-		{
-			"name": "Auth",
-			"item": [
-				{
-					"name": "Get Auth Token",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const response = pm.response.json();",
-									"pm.collectionVariables.set(\"JWT\", response.data.access_token);",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/auth/token",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"auth",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/auth/me",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"auth",
-								"me"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Market",
-			"item": [
-				{
-					"name": "Create a market",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let res = pm.response.json();",
-									"",
-									"if (res && res.data && res.data.id) {",
-									"    pm.collectionVariables.set(\"marketId\", res.data.id);",
-									"    console.log(\"marketId set to:\", res.data.id);",
-									"} else {",
-									"    console.warn(\"marketId not found in response\");",
-									"}",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"market_name\": \"Summer Artisan Market\",\n    \"contact_first_name\": \"Jane\",\n    \"contact_last_name\": \"Smith\",\n    \"email\": \"aryankhurana1511@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"google_place_id\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\",\n    \"location_text\": \"Central Park, New York\",\n    \"aesthetic\": \"Boho-chic, vintage, handmade\",\n    \"market_size\": \"50-100 vendors\",\n    \"target_vendors\": \"Artisans, crafters, local makers\",\n    \"optional_rules\": \"No pets allowed. Bring your own bags.\",\n    \"contract_url\": \"https://example.com/contract.pdf\",\n    \"description\": \"A vibrant summer market featuring local artisans and crafters\",\n    \"start_date\": \"2024-06-01\",\n    \"end_date\": \"2024-08-31\",\n    \"application_deadline\": \"2024-05-15T23:59:59Z\",\n    \"is_published\": false,\n    \"email_package_url\": \"https://example.com/email-package.pdf\",\n    \"payment_instructions\": \"Payment via bank transfer or PayPal\",\n    \"application_form\": {\n        \"questions\": [\n            {\n                \"id\": \"q1\",\n                \"type\": \"text\",\n                \"label\": \"Tell us about your products and what makes them unique\",\n                \"required\": true,\n                \"placeholder\": \"Describe your products...\"\n            },\n            {\n                \"id\": \"q2\",\n                \"type\": \"single_choice\",\n                \"label\": \"What category best describes your products?\",\n                \"required\": true,\n                \"options\": [\n                    \"Jewelry & Accessories\",\n                    \"Home & Decor\",\n                    \"Art & Prints\",\n                    \"Clothing & Apparel\",\n                    \"Food & Beverages\",\n                    \"Other\"\n                ]\n            },\n            {\n                \"id\": \"q3\",\n                \"type\": \"multiple_choice\",\n                \"label\": \"Which days can you attend? (Select all that apply)\",\n                \"required\": false,\n                \"options\": [\n                    \"Friday\",\n                    \"Saturday\",\n                    \"Sunday\",\n                    \"All three days\"\n                ]\n            }\n        ]\n    },\n    \"logo_url\": \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg\",\n    \"image_urls\": [\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/b763bc3e-584e-404b-9002-2e83f275603a.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/caaf4632-58bb-420f-8996-a45101d00b20.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/3be983e8-9046-41ef-a45c-5bb943024ec3.jpeg\"\n    ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/market",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"market"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Fetch a Market",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/market/{{marketId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"market",
-								"{{marketId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Search Markets",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/market",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"market"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Upload",
-			"item": [
-				{
-					"name": "Upload multiple images",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "files",
-									"type": "file",
-									"src": [
-										"/Users/aryankhurana/Desktop/images-test/IMG_3488.jpeg",
-										"/Users/aryankhurana/Desktop/images-test/IMG_3493.jpeg",
-										"/Users/aryankhurana/Desktop/images-test/IMG_3537.jpeg",
-										"/Users/aryankhurana/Desktop/images-test/IMG_3950.jpeg",
-										"/Users/aryankhurana/Desktop/images-test/IMG_3954.jpeg"
-									]
-								}
-							]
-						},
-						"url": {
-							"raw": "{{host}}/upload/images",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"upload",
-								"images"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Upload one image",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": "/Users/aryankhurana/Desktop/images-test/IMG_3493.jpeg"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{host}}/upload/image",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"upload",
-								"image"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Business",
-			"item": [
-				{
-					"name": "Create a new business",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let res = pm.response.json();",
-									"",
-									"if (res && res.data && res.data.id) {",
-									"    pm.collectionVariables.set(\"businessId\", res.data.id);",
-									"    console.log(\"businessId set to:\", res.data.id);",
-									"} else {",
-									"    console.warn(\"businessId not found in response\");",
-									"}",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"shop_name\": \"Artisan Jewelry Co\",\n    \"email\": \"contact@artisanjewelry.com\",\n    \"phone\": \"+1234567890\",\n    \"website_url\": \"https://www.artisanjewelry.com\",\n    \"instagram_handle\": \"@artisanjewelry\",\n    \"tiktok_handle\": \"@artisanjewelry\",\n    \"twitter_handle\": \"@artisanjewelry\",\n    \"facebook_handle\": \"artisanjewelry\",\n    \"category\": \"Jewelry & Accessories\",\n    \"average_price_range\": \"$50-$200\",\n    \"description\": \"Handcrafted artisan jewelry featuring unique designs and sustainable materials\",\n    \"logo_url\": \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg\",\n    \"image_urls\": [\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/b763bc3e-584e-404b-9002-2e83f275603a.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/caaf4632-58bb-420f-8996-a45101d00b20.jpeg\"\n    ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/business",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"business"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Application",
-			"item": [
-				{
-					"name": "Apply to Market",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let res = pm.response.json();",
-									"",
-									"if (res && res.data && res.data.id) {",
-									"    pm.collectionVariables.set(\"applicationId\", res.data.id);",
-									"    console.log(\"applicationId set to:\", res.data.id);",
-									"} else {",
-									"    console.warn(\"applicationId not found in response\");",
-									"}",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{JWT}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"market_id\": \"{{marketId}}\",\n    \"business_id\": \"{{businessId}}\",\n    \"answers\": {\n        \"q1\": \"Our products are handcrafted using sustainable materials and traditional techniques passed down through generations.\",\n        \"q2\": \"Jewelry & Accessories\",\n        \"q3\": [\n            \"Friday\",\n            \"Saturday\",\n            \"Sunday\"\n        ]\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/application",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"application"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Health Check",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{host}}/health",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"health"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"requests": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"requests": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "host",
-			"value": ""
-		},
-		{
-			"key": "JWT",
-			"value": ""
-		},
-		{
-			"key": "marketId",
-			"value": ""
-		},
-		{
-			"key": "businessId",
-			"value": "",
-			"type": "default"
-		},
-		{
-			"key": "applicationId",
-			"value": ""
-		}
-	]
+  "info": {
+    "_postman_id": "ae92dc03-3e11-40fc-afae-d3eb3a714efd",
+    "name": "Monkeybun Backend Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29598765",
+    "_collection_link": "https://thefuselabs.postman.co/workspace/FuseLabs~bc4d0987-5c33-4e3d-bb2d-5a6c792741af/collection/29598765-ae92dc03-3e11-40fc-afae-d3eb3a714efd?action=share&source=collection_link&creator=29598765"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get Auth Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set(\"JWT\", response.data.access_token);",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/auth/token",
+              "host": ["{{host}}"],
+              "path": ["auth", "token"]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/auth/me",
+              "host": ["{{host}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"full_name\": \"John Doe\",\n    \"avatar_url\": \"https://example.com/avatar.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/auth/me",
+              "host": ["{{host}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/dashboard/stats",
+              "host": ["{{host}}"],
+              "path": ["dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business",
+      "item": [
+        {
+          "name": "Create a new business",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = pm.response.json();",
+                  "if (res && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set(\"businessId\", res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"shop_name\": \"Artisan Jewelry Co\",\n    \"email\": \"contact@artisanjewelry.com\",\n    \"phone\": \"+1234567890\",\n    \"website_url\": \"https://www.artisanjewelry.com\",\n    \"instagram_handle\": \"@artisanjewelry\",\n    \"tiktok_handle\": \"@artisanjewelry\",\n    \"twitter_handle\": \"@artisanjewelry\",\n    \"facebook_handle\": \"artisanjewelry\",\n    \"category\": \"Jewelry & Accessories\",\n    \"average_price_range\": \"$50-$200\",\n    \"description\": \"Handcrafted artisan jewelry featuring unique designs and sustainable materials\",\n    \"logo_url\": \"https://example.com/logo.jpg\",\n    \"image_urls\": [\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/business",
+              "host": ["{{host}}"],
+              "path": ["business"]
+            }
+          }
+        },
+        {
+          "name": "Get Business",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/business/{{businessId}}",
+              "host": ["{{host}}"],
+              "path": ["business", "{{businessId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Businesses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/business?category=Jewelry&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["business"],
+              "query": [
+                { "key": "category", "value": "Jewelry" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Businesses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/business/my-businesses?limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["business", "my-businesses"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Business",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"shop_name\": \"Updated Shop Name\",\n    \"description\": \"Updated description\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/business/{{businessId}}",
+              "host": ["{{host}}"],
+              "path": ["business", "{{businessId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Business",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/business/{{businessId}}",
+              "host": ["{{host}}"],
+              "path": ["business", "{{businessId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Business Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"caption\": \"Updated caption\",\n    \"sort_order\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/business/{{businessId}}/images/{{imageId}}",
+              "host": ["{{host}}"],
+              "path": ["business", "{{businessId}}", "images", "{{imageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Business Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/business/{{businessId}}/images/{{imageId}}",
+              "host": ["{{host}}"],
+              "path": ["business", "{{businessId}}", "images", "{{imageId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Market",
+      "item": [
+        {
+          "name": "Create a market",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = pm.response.json();",
+                  "if (res && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set(\"marketId\", res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"market_name\": \"Summer Artisan Market\",\n    \"contact_first_name\": \"Jane\",\n    \"contact_last_name\": \"Smith\",\n    \"email\": \"aryankhurana1511@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"google_place_id\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\",\n    \"location_text\": \"Central Park, New York\",\n    \"aesthetic\": \"Boho-chic, vintage, handmade\",\n    \"market_size\": \"50-100 vendors\",\n    \"target_vendors\": \"Artisans, crafters, local makers\",\n    \"optional_rules\": \"No pets allowed. Bring your own bags.\",\n    \"contract_url\": \"https://example.com/contract.pdf\",\n    \"description\": \"A vibrant summer market featuring local artisans and crafters\",\n    \"start_date\": \"2024-06-01\",\n    \"end_date\": \"2024-08-31\",\n    \"application_deadline\": \"2024-05-15T23:59:59Z\",\n    \"is_published\": false,\n    \"email_package_url\": \"https://example.com/email-package.pdf\",\n    \"payment_instructions\": \"Payment via bank transfer or PayPal\",\n    \"application_form\": {\n        \"questions\": [\n            {\n                \"id\": \"q1\",\n                \"type\": \"text\",\n                \"label\": \"Tell us about your products\",\n                \"required\": true\n            }\n        ]\n    },\n    \"logo_url\": \"https://example.com/logo.jpg\",\n    \"image_urls\": [\"https://example.com/image1.jpg\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/market",
+              "host": ["{{host}}"],
+              "path": ["market"]
+            }
+          }
+        },
+        {
+          "name": "Fetch a Market",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/market/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["market", "{{marketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Markets",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/market?city=New York&is_published=true&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["market"],
+              "query": [
+                { "key": "city", "value": "New York" },
+                { "key": "is_published", "value": "true" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Markets",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/market/my-markets?limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["market", "my-markets"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Market",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"market_name\": \"Updated Market Name\",\n    \"description\": \"Updated description\",\n    \"is_published\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/market/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["market", "{{marketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Market",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/market/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["market", "{{marketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Market Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"caption\": \"Updated caption\",\n    \"sort_order\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/market/{{marketId}}/images/{{imageId}}",
+              "host": ["{{host}}"],
+              "path": ["market", "{{marketId}}", "images", "{{imageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Market Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/market/{{marketId}}/images/{{imageId}}",
+              "host": ["{{host}}"],
+              "path": ["market", "{{marketId}}", "images", "{{imageId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Application",
+      "item": [
+        {
+          "name": "Apply to Market",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = pm.response.json();",
+                  "if (res && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set(\"applicationId\", res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"market_id\": \"{{marketId}}\",\n    \"business_id\": \"{{businessId}}\",\n    \"answers\": {\n        \"q1\": \"Our products are handcrafted using sustainable materials.\",\n        \"q2\": \"Jewelry & Accessories\"\n    }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application",
+              "host": ["{{host}}"],
+              "path": ["application"]
+            }
+          }
+        },
+        {
+          "name": "Get Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Applications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/application?market_id={{marketId}}&status=applied&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["application"],
+              "query": [
+                { "key": "market_id", "value": "{{marketId}}" },
+                { "key": "status", "value": "applied" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Market Applications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/application/market/{{marketId}}?status=applied&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["application", "market", "{{marketId}}"],
+              "query": [
+                { "key": "status", "value": "applied" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/application/my-applications?status=applied&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["application", "my-applications"],
+              "query": [
+                { "key": "status", "value": "applied" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"notes_for_org\": \"Updated notes\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Accept Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"payment_method\": \"bank_transfer\",\n    \"payment_status\": \"pending\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}/accept",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Reject Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"rejection_reason\": \"Does not meet our requirements\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}/reject",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}", "reject"]
+            }
+          }
+        },
+        {
+          "name": "Update Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"payment_method\": \"credit_card\",\n    \"payment_status\": \"paid\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}/payment",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}", "payment"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Application",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/application/{{applicationId}}/confirm",
+              "host": ["{{host}}"],
+              "path": ["application", "{{applicationId}}", "confirm"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Create Attendance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = pm.response.json();",
+                  "if (res && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set(\"attendanceId\", res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"market_id\": \"{{marketId}}\",\n    \"status\": \"attending\",\n    \"calendar_event_id\": \"event123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/attendance",
+              "host": ["{{host}}"],
+              "path": ["attendance"]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/attendance/{{attendanceId}}",
+              "host": ["{{host}}"],
+              "path": ["attendance", "{{attendanceId}}"]
+            }
+          }
+        },
+        {
+          "name": "List Attendances",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/attendance?market_id={{marketId}}&status=attending&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["attendance"],
+              "query": [
+                { "key": "market_id", "value": "{{marketId}}" },
+                { "key": "status", "value": "attending" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Attendances",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/attendance/my-attendances?limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["attendance", "my-attendances"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Attendance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"not_attending\",\n    \"calendar_event_id\": \"updated_event123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/attendance/{{attendanceId}}",
+              "host": ["{{host}}"],
+              "path": ["attendance", "{{attendanceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Attendance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/attendance/{{attendanceId}}",
+              "host": ["{{host}}"],
+              "path": ["attendance", "{{attendanceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "item": [
+        {
+          "name": "Create Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = pm.response.json();",
+                  "if (res && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set(\"reviewId\", res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"target_type\": \"business\",\n    \"target_id\": \"{{businessId}}\",\n    \"rating\": 5,\n    \"title\": \"Great products!\",\n    \"body\": \"Really loved the quality and craftsmanship.\",\n    \"is_published\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/review",
+              "host": ["{{host}}"],
+              "path": ["review"]
+            }
+          }
+        },
+        {
+          "name": "Get Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/review/{{reviewId}}",
+              "host": ["{{host}}"],
+              "path": ["review", "{{reviewId}}"]
+            }
+          }
+        },
+        {
+          "name": "List Reviews",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/review?target_type=business&target_id={{businessId}}&is_published=true&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["review"],
+              "query": [
+                { "key": "target_type", "value": "business" },
+                { "key": "target_id", "value": "{{businessId}}" },
+                { "key": "is_published", "value": "true" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"rating\": 4,\n    \"title\": \"Updated title\",\n    \"body\": \"Updated review body\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/review/{{reviewId}}",
+              "host": ["{{host}}"],
+              "path": ["review", "{{reviewId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/review/{{reviewId}}",
+              "host": ["{{host}}"],
+              "path": ["review", "{{reviewId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Review Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/review/stats/business/{{businessId}}",
+              "host": ["{{host}}"],
+              "path": ["review", "stats", "business", "{{businessId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload multiple images",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "entity_type",
+                  "value": "market",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{host}}/upload/images?entity_type=market",
+              "host": ["{{host}}"],
+              "path": ["upload", "images"],
+              "query": [{ "key": "entity_type", "value": "market" }]
+            }
+          }
+        },
+        {
+          "name": "Upload one image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "entity_type",
+                  "value": "market",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{host}}/upload/image?entity_type=market",
+              "host": ["{{host}}"],
+              "path": ["upload", "image"],
+              "query": [{ "key": "entity_type", "value": "market" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/health",
+          "host": ["{{host}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "host", "value": "" },
+    { "key": "JWT", "value": "" },
+    { "key": "marketId", "value": "" },
+    { "key": "businessId", "value": "" },
+    { "key": "applicationId", "value": "" },
+    { "key": "attendanceId", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "imageId", "value": "" }
+  ]
 }
