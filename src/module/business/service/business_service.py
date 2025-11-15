@@ -188,6 +188,49 @@ class BusinessService:
         db.delete(business)
         db.commit()
 
+    def get_my_businesses(
+        self, db: Session, user_id: UUID, limit: int = 20, offset: int = 0
+    ) -> BusinessListResponse:
+        query = select(Business).where(Business.owner_user_id == user_id)
+
+        total_query = (
+            select(func.count())
+            .select_from(Business)
+            .where(Business.owner_user_id == user_id)
+        )
+        total = db.exec(total_query).one()
+
+        query = query.order_by(Business.created_at.desc())
+        query = query.offset(offset).limit(limit)
+
+        businesses = db.exec(query).all()
+
+        business_ids = [business.id for business in businesses]
+        review_stats = self.review_service.get_batch_review_stats(
+            db, "business", business_ids
+        )
+
+        business_responses = []
+        for business in businesses:
+            review_count, average_rating = review_stats.get(business.id, (0, None))
+            business_responses.append(
+                BusinessSearchResponse(
+                    id=business.id,
+                    shop_name=business.shop_name,
+                    category=business.category,
+                    logo_url=business.logo_url,
+                    review_count=review_count,
+                    average_rating=average_rating,
+                )
+            )
+
+        return BusinessListResponse(
+            businesses=business_responses,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
     def _get_business_with_images(
         self, db: Session, business_id: UUID
     ) -> BusinessResponse:

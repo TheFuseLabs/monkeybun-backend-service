@@ -301,6 +301,55 @@ class MarketService:
 
         return MarketResponse.model_validate(market_dict)
 
+    def get_my_markets(
+        self, db: Session, user_id: UUID, limit: int = 20, offset: int = 0
+    ) -> MarketListResponse:
+        query = select(Market).where(Market.organizer_user_id == user_id)
+
+        total_query = (
+            select(func.count())
+            .select_from(Market)
+            .where(Market.organizer_user_id == user_id)
+        )
+        total = db.exec(total_query).one()
+
+        query = query.order_by(Market.created_at.desc())
+        query = query.offset(offset).limit(limit)
+
+        markets = db.exec(query).all()
+
+        market_ids = [market.id for market in markets]
+        review_stats = self.review_service.get_batch_review_stats(
+            db, "market", market_ids
+        )
+
+        market_responses = []
+        for market in markets:
+            review_count, average_rating = review_stats.get(market.id, (0, None))
+            market_responses.append(
+                MarketSearchResponse(
+                    id=market.id,
+                    market_name=market.market_name,
+                    location_text=market.location_text,
+                    city=market.city,
+                    country=market.country,
+                    formatted_address=market.formatted_address,
+                    start_date=market.start_date,
+                    end_date=market.end_date,
+                    logo_url=market.logo_url,
+                    is_published=market.is_published,
+                    review_count=review_count,
+                    average_rating=average_rating,
+                )
+            )
+
+        return MarketListResponse(
+            markets=market_responses,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
     def get_orphaned_images(
         self, db: Session, older_than_hours: int = 24
     ) -> list[PendingImage]:

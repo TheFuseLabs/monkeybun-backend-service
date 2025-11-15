@@ -1,0 +1,508 @@
+{
+	"info": {
+		"_postman_id": "ae92dc03-3e11-40fc-afae-d3eb3a714efd",
+		"name": "Monkeybun Backend Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29598765",
+		"_collection_link": "https://thefuselabs.postman.co/workspace/FuseLabs~bc4d0987-5c33-4e3d-bb2d-5a6c792741af/collection/29598765-ae92dc03-3e11-40fc-afae-d3eb3a714efd?action=share&source=collection_link&creator=29598765"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Get Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.collectionVariables.set(\"JWT\", response.data.access_token);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/auth/token",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/auth/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Market",
+			"item": [
+				{
+					"name": "Create a market",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"if (res && res.data && res.data.id) {",
+									"    pm.collectionVariables.set(\"marketId\", res.data.id);",
+									"    console.log(\"marketId set to:\", res.data.id);",
+									"} else {",
+									"    console.warn(\"marketId not found in response\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"market_name\": \"Summer Artisan Market\",\n    \"contact_first_name\": \"Jane\",\n    \"contact_last_name\": \"Smith\",\n    \"email\": \"aryankhurana1511@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"google_place_id\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\",\n    \"location_text\": \"Central Park, New York\",\n    \"aesthetic\": \"Boho-chic, vintage, handmade\",\n    \"market_size\": \"50-100 vendors\",\n    \"target_vendors\": \"Artisans, crafters, local makers\",\n    \"optional_rules\": \"No pets allowed. Bring your own bags.\",\n    \"contract_url\": \"https://example.com/contract.pdf\",\n    \"description\": \"A vibrant summer market featuring local artisans and crafters\",\n    \"start_date\": \"2024-06-01\",\n    \"end_date\": \"2024-08-31\",\n    \"application_deadline\": \"2024-05-15T23:59:59Z\",\n    \"is_published\": false,\n    \"email_package_url\": \"https://example.com/email-package.pdf\",\n    \"payment_instructions\": \"Payment via bank transfer or PayPal\",\n    \"application_form\": {\n        \"questions\": [\n            {\n                \"id\": \"q1\",\n                \"type\": \"text\",\n                \"label\": \"Tell us about your products and what makes them unique\",\n                \"required\": true,\n                \"placeholder\": \"Describe your products...\"\n            },\n            {\n                \"id\": \"q2\",\n                \"type\": \"single_choice\",\n                \"label\": \"What category best describes your products?\",\n                \"required\": true,\n                \"options\": [\n                    \"Jewelry & Accessories\",\n                    \"Home & Decor\",\n                    \"Art & Prints\",\n                    \"Clothing & Apparel\",\n                    \"Food & Beverages\",\n                    \"Other\"\n                ]\n            },\n            {\n                \"id\": \"q3\",\n                \"type\": \"multiple_choice\",\n                \"label\": \"Which days can you attend? (Select all that apply)\",\n                \"required\": false,\n                \"options\": [\n                    \"Friday\",\n                    \"Saturday\",\n                    \"Sunday\",\n                    \"All three days\"\n                ]\n            }\n        ]\n    },\n    \"logo_url\": \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg\",\n    \"image_urls\": [\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/b763bc3e-584e-404b-9002-2e83f275603a.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/caaf4632-58bb-420f-8996-a45101d00b20.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/market/3be983e8-9046-41ef-a45c-5bb943024ec3.jpeg\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/market",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"market"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch a Market",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/market/{{marketId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"market",
+								"{{marketId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Markets",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/market",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"market"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Upload",
+			"item": [
+				{
+					"name": "Upload multiple images",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": [
+										"/Users/aryankhurana/Desktop/images-test/IMG_3488.jpeg",
+										"/Users/aryankhurana/Desktop/images-test/IMG_3493.jpeg",
+										"/Users/aryankhurana/Desktop/images-test/IMG_3537.jpeg",
+										"/Users/aryankhurana/Desktop/images-test/IMG_3950.jpeg",
+										"/Users/aryankhurana/Desktop/images-test/IMG_3954.jpeg"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/upload/images",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"upload",
+								"images"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload one image",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/Users/aryankhurana/Desktop/images-test/IMG_3493.jpeg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/upload/image",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"upload",
+								"image"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Business",
+			"item": [
+				{
+					"name": "Create a new business",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"if (res && res.data && res.data.id) {",
+									"    pm.collectionVariables.set(\"businessId\", res.data.id);",
+									"    console.log(\"businessId set to:\", res.data.id);",
+									"} else {",
+									"    console.warn(\"businessId not found in response\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"shop_name\": \"Artisan Jewelry Co\",\n    \"email\": \"contact@artisanjewelry.com\",\n    \"phone\": \"+1234567890\",\n    \"website_url\": \"https://www.artisanjewelry.com\",\n    \"instagram_handle\": \"@artisanjewelry\",\n    \"tiktok_handle\": \"@artisanjewelry\",\n    \"twitter_handle\": \"@artisanjewelry\",\n    \"facebook_handle\": \"artisanjewelry\",\n    \"category\": \"Jewelry & Accessories\",\n    \"average_price_range\": \"$50-$200\",\n    \"description\": \"Handcrafted artisan jewelry featuring unique designs and sustainable materials\",\n    \"logo_url\": \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg\",\n    \"image_urls\": [\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/b763bc3e-584e-404b-9002-2e83f275603a.jpeg\",\n        \"https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/caaf4632-58bb-420f-8996-a45101d00b20.jpeg\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/business",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"business"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Application",
+			"item": [
+				{
+					"name": "Apply to Market",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"if (res && res.data && res.data.id) {",
+									"    pm.collectionVariables.set(\"applicationId\", res.data.id);",
+									"    console.log(\"applicationId set to:\", res.data.id);",
+									"} else {",
+									"    console.warn(\"applicationId not found in response\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"market_id\": \"{{marketId}}\",\n    \"business_id\": \"{{businessId}}\",\n    \"answers\": {\n        \"q1\": \"Our products are handcrafted using sustainable materials and traditional techniques passed down through generations.\",\n        \"q2\": \"Jewelry & Accessories\",\n        \"q3\": [\n            \"Friday\",\n            \"Saturday\",\n            \"Sunday\"\n        ]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/application",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"application"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/health",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": ""
+		},
+		{
+			"key": "JWT",
+			"value": ""
+		},
+		{
+			"key": "marketId",
+			"value": ""
+		},
+		{
+			"key": "businessId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "applicationId",
+			"value": ""
+		}
+	]
+}

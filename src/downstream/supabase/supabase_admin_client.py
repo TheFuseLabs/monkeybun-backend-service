@@ -22,3 +22,15 @@ class SupabaseAdminClient:
         except Exception as e:
             logger.error(f"Failed to get user for {user_id}: {e}")
             return None
+
+    def update_user(self, user_id: UUID, user_metadata: dict):
+        try:
+            response = self.client.auth.admin.update_user_by_id(
+                str(user_id), {"user_metadata": user_metadata}
+            )
+            if response.user:
+                return response.user
+            return None
+        except Exception as e:
+            logger.error(f"Failed to update user for {user_id}: {e}")
+            return None

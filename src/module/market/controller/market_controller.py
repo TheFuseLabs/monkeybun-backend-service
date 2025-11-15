@@ -95,6 +95,24 @@ def search_markets(
     )
 
 
+@router.get("/my-markets")
+def get_my_markets(
+    market_service: MarketServiceDep,
+    db: DatabaseDep,
+    current_user: Annotated[UUID, Depends(get_current_user)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> StandardResponse:
+    logger.info(
+        f"Retrieving markets for user {current_user} - limit: {limit}, offset: {offset}"
+    )
+    result = market_service.get_my_markets(db, current_user, limit, offset)
+    return Response.success(
+        message="Markets retrieved successfully",
+        data=result.model_dump(mode="json"),
+    )
+
+
 @router.put("/{market_id}")
 def update_market(
     market_id: UUID,
