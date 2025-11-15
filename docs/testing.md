@@ -219,3 +219,168 @@ No request body. Use path parameters:
 - `{image_id}` (UUID): Image ID
 
 **Example:** `DELETE /market/123e4567-e89b-12d3-a456-426614174000/images/987fcdeb-51a2-43d7-b123-456789abcdef`
+
+---
+
+# Business API Testing
+
+## POST /business - Create Business
+
+```json
+{
+  "shop_name": "Artisan Jewelry Co",
+  "email": "contact@artisanjewelry.com",
+  "phone": "+1234567890",
+  "website_url": "https://www.artisanjewelry.com",
+  "instagram_handle": "@artisanjewelry",
+  "tiktok_handle": "@artisanjewelry",
+  "twitter_handle": "@artisanjewelry",
+  "facebook_handle": "artisanjewelry",
+  "category": "Jewelry & Accessories",
+  "average_price_range": "$50-$200",
+  "description": "Handcrafted artisan jewelry featuring unique designs and sustainable materials",
+  "logo_url": "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/236f7430-7fa0-44f5-81bc-96c6bf77dcd3.jpeg",
+  "image_urls": [
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/74dcc4e6-40bc-4d37-8dd4-3e03bf421e4b.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/b763bc3e-584e-404b-9002-2e83f275603a.jpeg",
+    "https://nojdwshibrejmzwdoptq.storage.supabase.co/storage/v1/s3/monkeybun-storage/business/caaf4632-58bb-420f-8996-a45101d00b20.jpeg"
+  ]
+}
+```
+
+**Minimal example (only required field):**
+
+```json
+{
+  "shop_name": "My Shop"
+}
+```
+
+**Note:** Only `shop_name` is required. Optional fields include: `phone`, `website_url`, `instagram_handle`, `tiktok_handle`, `twitter_handle`, `facebook_handle`, and `logo_url`.
+
+---
+
+## GET /business/{business_id} - Get Business
+
+No request body. Use path parameter: `{business_id}` (UUID)
+
+**Example:** `GET /business/123e4567-e89b-12d3-a456-426614174000`
+
+---
+
+## GET /business - Search Businesses
+
+No request body. Use query parameters:
+
+**Query Parameters:**
+
+- `category` (optional, string): Filter by category
+- `limit` (optional, int, 1-100, default: 20): Number of results per page
+- `offset` (optional, int, >=0, default: 0): Pagination offset
+
+**Example:**
+
+```
+GET /business?category=Jewelry&limit=10&offset=0
+GET /business?category=Home%20%26%20Decor&limit=20
+GET /business?limit=50&offset=20
+```
+
+---
+
+## PUT /business/{business_id} - Update Business
+
+All fields are optional. Only include fields you want to update.
+
+```json
+{
+  "shop_name": "Updated Shop Name",
+  "description": "Updated description",
+  "category": "Updated Category",
+  "image_urls": [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg"
+  ],
+  "logo_url": "https://example.com/logo.jpg"
+}
+```
+
+**Minimal example (updating only one field):**
+
+```json
+{
+  "shop_name": "New Shop Name"
+}
+```
+
+**Full example (all fields):**
+
+```json
+{
+  "shop_name": "Premium Artisan Jewelry",
+  "email": "newemail@artisanjewelry.com",
+  "phone": "+1987654321",
+  "website_url": "https://www.newartisanjewelry.com",
+  "instagram_handle": "@newartisanjewelry",
+  "tiktok_handle": "@newartisanjewelry",
+  "twitter_handle": "@newartisanjewelry",
+  "facebook_handle": "newartisanjewelry",
+  "category": "Luxury Jewelry",
+  "average_price_range": "$200-$500",
+  "description": "Updated description for premium artisan jewelry",
+  "logo_url": "https://example.com/new-logo.jpg",
+  "image_urls": [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg",
+    "https://example.com/image3.jpg"
+  ]
+}
+```
+
+---
+
+## DELETE /business/{business_id} - Delete Business
+
+No request body. Use path parameter: `{business_id}` (UUID)
+
+**Example:** `DELETE /business/123e4567-e89b-12d3-a456-426614174000`
+
+---
+
+## PUT /business/{business_id}/images/{image_id} - Update Business Image
+
+```json
+{
+  "caption": "Updated image caption",
+  "sort_order": 2
+}
+```
+
+**Update only caption:**
+
+```json
+{
+  "caption": "Featured product showcase"
+}
+```
+
+**Update only sort order:**
+
+```json
+{
+  "sort_order": 0
+}
+```
+
+**Note:** Both fields are optional. Include only the fields you want to update.
+
+---
+
+## DELETE /business/{business_id}/images/{image_id} - Delete Business Image
+
+No request body. Use path parameters:
+
+- `{business_id}` (UUID): Business ID
+- `{image_id}` (UUID): Image ID
+
+**Example:** `DELETE /business/123e4567-e89b-12d3-a456-426614174000/images/987fcdeb-51a2-43d7-b123-456789abcdef`
