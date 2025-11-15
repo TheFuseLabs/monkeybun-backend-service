@@ -15,11 +15,15 @@ from src.module.market.schema.market_schema import (
     MarketSearchResponse,
     MarketUpdateRequest,
 )
+from src.module.review.service.review_service import ReviewService
 
 
 class MarketService:
-    def __init__(self, google_places_client: GooglePlacesClient):
+    def __init__(
+        self, google_places_client: GooglePlacesClient, review_service: ReviewService
+    ):
         self.google_places_client = google_places_client
+        self.review_service = review_service
 
     def create_market(
         self, db: Session, user_id: UUID, request: MarketCreateRequest
@@ -156,8 +160,14 @@ class MarketService:
 
         markets = db.exec(query).all()
 
+        market_ids = [market.id for market in markets]
+        review_stats = self.review_service.get_batch_review_stats(
+            db, "market", market_ids
+        )
+
         market_responses = []
         for market in markets:
+            review_count, average_rating = review_stats.get(market.id, (0, None))
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -170,6 +180,8 @@ class MarketService:
                     end_date=market.end_date,
                     logo_url=market.logo_url,
                     is_published=market.is_published,
+                    review_count=review_count,
+                    average_rating=average_rating,
                 )
             )
 
@@ -276,10 +288,16 @@ class MarketService:
         )
         images = db.exec(images_query).all()
 
+        review_count, average_rating = self.review_service._get_review_stats_internal(
+            db, "market", market_id
+        )
+
         market_dict = market.model_dump()
         market_dict["images"] = [
             MarketImageResponse.model_validate(img.model_dump()) for img in images
         ]
+        market_dict["review_count"] = review_count
+        market_dict["average_rating"] = average_rating
 
         return MarketResponse.model_validate(market_dict)
 

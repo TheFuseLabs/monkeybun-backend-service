@@ -105,6 +105,8 @@ class MarketResponse(BaseModel):
     logo_url: Optional[str] = None
     created_at: datetime
     images: Optional[list[MarketImageResponse]] = None
+    review_count: Optional[int] = None
+    average_rating: Optional[float] = None
 
 
 class MarketSearchFilters(BaseModel):
@@ -133,6 +135,8 @@ class MarketSearchResponse(BaseModel):
     end_date: Optional[date] = None
     logo_url: Optional[str] = None
     is_published: bool
+    review_count: Optional[int] = None
+    average_rating: Optional[float] = None
 
 
 class MarketListResponse(BaseModel):

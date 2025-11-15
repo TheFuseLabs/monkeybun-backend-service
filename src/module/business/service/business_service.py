@@ -13,9 +13,13 @@ from src.module.business.schema.business_schema import (
     BusinessSearchResponse,
     BusinessUpdateRequest,
 )
+from src.module.review.service.review_service import ReviewService
 
 
 class BusinessService:
+    def __init__(self, review_service: ReviewService):
+        self.review_service = review_service
+
     def create_business(
         self, db: Session, user_id: UUID, request: BusinessCreateRequest
     ) -> BusinessResponse:
@@ -83,14 +87,22 @@ class BusinessService:
 
         businesses = db.exec(query).all()
 
+        business_ids = [business.id for business in businesses]
+        review_stats = self.review_service.get_batch_review_stats(
+            db, "business", business_ids
+        )
+
         business_responses = []
         for business in businesses:
+            review_count, average_rating = review_stats.get(business.id, (0, None))
             business_responses.append(
                 BusinessSearchResponse(
                     id=business.id,
                     shop_name=business.shop_name,
                     category=business.category,
                     logo_url=business.logo_url,
+                    review_count=review_count,
+                    average_rating=average_rating,
                 )
             )
 
@@ -192,10 +204,15 @@ class BusinessService:
         )
         images = db.exec(images_query).all()
 
+        review_count, average_rating = self.review_service._get_review_stats_internal(
+            db, "business", business_id
+        )
+
         business_dict = business.model_dump()
         business_dict["images"] = [
             BusinessImageResponse.model_validate(img.model_dump()) for img in images
         ]
+        business_dict["review_count"] = review_count
+        business_dict["average_rating"] = average_rating
 
         return BusinessResponse.model_validate(business_dict)
-

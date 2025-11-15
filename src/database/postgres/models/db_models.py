@@ -245,7 +245,10 @@ class Review(SQLModel, table=True):
     __tablename__ = "reviews"
     __table_args__ = (
         Index("reviews_target_idx", "target_type", "target_id"),
-        CheckConstraint("rating >= 1 AND rating <= 5", name="reviews_rating_check"),
+        CheckConstraint(
+            "rating IS NULL OR (rating >= 1 AND rating <= 5)",
+            name="reviews_rating_check",
+        ),
     )
 
     id: UUID = Field(
@@ -259,7 +262,7 @@ class Review(SQLModel, table=True):
     author_user_id: UUID = Field(sa_column=Column(PGUUID(as_uuid=True)))
     target_type: str
     target_id: UUID = Field(sa_column=Column(PGUUID(as_uuid=True)))
-    rating: int
+    rating: Optional[int] = None
     title: Optional[str] = None
     body: Optional[str] = None
     is_published: bool = Field(default=True)

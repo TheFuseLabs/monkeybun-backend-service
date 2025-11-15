@@ -67,6 +67,8 @@ class BusinessResponse(BaseModel):
     logo_url: Optional[str] = None
     created_at: datetime
     images: Optional[list[BusinessImageResponse]] = None
+    review_count: Optional[int] = None
+    average_rating: Optional[float] = None
 
 
 class BusinessSearchFilters(BaseModel):
@@ -80,6 +82,8 @@ class BusinessSearchResponse(BaseModel):
     shop_name: str
     category: Optional[str] = None
     logo_url: Optional[str] = None
+    review_count: Optional[int] = None
+    average_rating: Optional[float] = None
 
 
 class BusinessListResponse(BaseModel):
