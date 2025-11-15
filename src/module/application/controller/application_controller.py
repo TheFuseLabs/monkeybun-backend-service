@@ -2,11 +2,13 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func
+from sqlmodel import select
 
 from src.common.logger import logger
 from src.common.utils.response import Response, StandardResponse, Status
 from src.database.dependency.db_dependency import DatabaseDep
-from src.database.postgres.models.db_models import Business, Market
+from src.database.postgres.models.db_models import Application, ApplicationStatus, Business, Market
 from src.module.application.dependency.application_dependency import (
     ApplicationServiceDep,
     MarketOrganizerDep,
@@ -72,6 +74,60 @@ def get_application(
     return Response.success(
         message="Application retrieved successfully",
         data=application.model_dump(mode="json"),
+    )
+
+
+@router.get("/my-applications")
+def get_my_applications(
+    application_service: ApplicationServiceDep,
+    db: DatabaseDep,
+    current_user: Annotated[UUID, Depends(get_current_user)],
+    status: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> StandardResponse:
+    logger.info(
+        f"Retrieving applications for user {current_user} - status: {status}, limit: {limit}, offset: {offset}"
+    )
+    
+    businesses = db.exec(select(Business).where(Business.owner_user_id == current_user)).all()
+    
+    if not businesses:
+        return Response.success(
+            message="No applications found",
+            data={"applications": [], "total": 0, "limit": limit, "offset": offset},
+        )
+    
+    business_ids = [business.id for business in businesses]
+    
+    query = select(Application).where(Application.business_id.in_(business_ids))
+    
+    if status:
+        try:
+            status_enum = ApplicationStatus(status)
+            query = query.where(Application.status == status_enum)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+    
+    total_query = select(func.count()).select_from(Application).where(Application.business_id.in_(business_ids))
+    if status:
+        total_query = total_query.where(Application.status == status_enum)
+    
+    total = db.exec(total_query).one()
+    
+    query = query.order_by(Application.created_at.desc())
+    query = query.offset(offset).limit(limit)
+    
+    applications = db.exec(query).all()
+    
+    return Response.success(
+        message="Applications retrieved successfully",
+        data={
+            "applications": [app.model_dump(mode="json") for app in applications],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        },
     )
 
 
