@@ -36,6 +36,24 @@ def create_business(
     )
 
 
+@router.get("/my-businesses")
+def get_my_businesses(
+    business_service: BusinessServiceDep,
+    db: DatabaseDep,
+    current_user: Annotated[UUID, Depends(get_current_user)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> StandardResponse:
+    logger.info(
+        f"Retrieving businesses for user {current_user} - limit: {limit}, offset: {offset}"
+    )
+    result = business_service.get_my_businesses(db, current_user, limit, offset)
+    return Response.success(
+        message="Businesses retrieved successfully",
+        data=result.model_dump(mode="json"),
+    )
+
+
 @router.get("/{business_id}")
 def get_business(
     business_id: UUID,
@@ -68,24 +86,6 @@ def search_businesses(
     )
 
     result = business_service.search_businesses(db, filters)
-    return Response.success(
-        message="Businesses retrieved successfully",
-        data=result.model_dump(mode="json"),
-    )
-
-
-@router.get("/my-businesses")
-def get_my_businesses(
-    business_service: BusinessServiceDep,
-    db: DatabaseDep,
-    current_user: Annotated[UUID, Depends(get_current_user)],
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
-) -> StandardResponse:
-    logger.info(
-        f"Retrieving businesses for user {current_user} - limit: {limit}, offset: {offset}"
-    )
-    result = business_service.get_my_businesses(db, current_user, limit, offset)
     return Response.success(
         message="Businesses retrieved successfully",
         data=result.model_dump(mode="json"),
@@ -190,4 +190,3 @@ def delete_business_image(
     db.commit()
 
     return Response.no_content()
-

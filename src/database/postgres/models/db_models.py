@@ -118,7 +118,7 @@ class Market(SQLModel, table=True):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     application_deadline: Optional[datetime] = None
-    is_published: bool = Field(default=False)
+    is_published: bool = Field(default=True)
     email_package_url: Optional[str] = None
     payment_instructions: Optional[str] = None
     application_form: Optional[Dict[str, Any]] = Field(
@@ -126,6 +126,9 @@ class Market(SQLModel, table=True):
         sa_column=Column(JSONB),
     )
     logo_url: Optional[str] = None
+    is_free: bool = Field(default=False)
+    cost_amount: Optional[float] = None
+    cost_currency: Optional[str] = None
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(server_default=func.now()),

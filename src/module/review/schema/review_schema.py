@@ -24,6 +24,8 @@ class ReviewUpdateRequest(BaseModel):
 class ReviewResponse(BaseModel):
     id: UUID
     author_user_id: UUID
+    author_name: Optional[str] = None
+    author_avatar_url: Optional[str] = None
     target_type: str
     target_id: UUID
     rating: Optional[int] = None
@@ -54,4 +56,3 @@ class ReviewStatsResponse(BaseModel):
     target_id: UUID
     total_reviews: int
     average_rating: Optional[float] = None
-

@@ -5,6 +5,7 @@ from sqlalchemy import and_, func
 from sqlmodel import Session, select
 
 from src.database.postgres.models.db_models import Business, Market, Review
+from src.downstream.supabase.supabase_admin_client import SupabaseAdminClient
 from src.module.review.schema.review_schema import (
     ReviewCreateRequest,
     ReviewListFilters,
@@ -16,6 +17,25 @@ from src.module.review.schema.review_schema import (
 
 
 class ReviewService:
+    def __init__(self, supabase_admin_client: SupabaseAdminClient):
+        self.supabase_admin_client = supabase_admin_client
+
+    def _enrich_review_with_author(self, review: Review) -> ReviewResponse:
+        review_dict = review.model_dump()
+        author_name = None
+        author_avatar_url = None
+
+        user = self.supabase_admin_client.get_user(review.author_user_id)
+        if user:
+            metadata = user.user_metadata or {}
+            author_name = metadata.get("full_name") or metadata.get("display_name")
+            author_avatar_url = metadata.get("avatar_url") or metadata.get("picture")
+
+        review_dict["author_name"] = author_name
+        review_dict["author_avatar_url"] = author_avatar_url
+
+        return ReviewResponse.model_validate(review_dict)
+
     def create_review(
         self, db: Session, user_id: UUID, request: ReviewCreateRequest
     ) -> ReviewResponse:
@@ -56,14 +76,14 @@ class ReviewService:
         db.commit()
         db.refresh(review)
 
-        return ReviewResponse.model_validate(review.model_dump())
+        return self._enrich_review_with_author(review)
 
     def get_review_by_id(self, db: Session, review_id: UUID) -> ReviewResponse:
         review = db.get(Review, review_id)
         if not review:
             raise HTTPException(status_code=404, detail="Review not found")
 
-        return ReviewResponse.model_validate(review.model_dump())
+        return self._enrich_review_with_author(review)
 
     def list_reviews(
         self, db: Session, filters: ReviewListFilters
@@ -99,7 +119,7 @@ class ReviewService:
         reviews = db.exec(query).all()
 
         review_responses = [
-            ReviewResponse.model_validate(review.model_dump()) for review in reviews
+            self._enrich_review_with_author(review) for review in reviews
         ]
 
         return ReviewListResponse(
@@ -135,7 +155,7 @@ class ReviewService:
         db.commit()
         db.refresh(review)
 
-        return ReviewResponse.model_validate(review.model_dump())
+        return self._enrich_review_with_author(review)
 
     def delete_review(self, db: Session, review_id: UUID, user_id: UUID) -> None:
         review = db.get(Review, review_id)
@@ -234,4 +254,3 @@ class ReviewService:
                 stats_map[target_id] = (0, None)
 
         return stats_map
-

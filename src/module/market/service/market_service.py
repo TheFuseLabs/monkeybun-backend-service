@@ -89,9 +89,6 @@ class MarketService:
         if filters.country:
             conditions.append(Market.country.ilike(f"%{filters.country}%"))
 
-        if filters.is_published is not None:
-            conditions.append(Market.is_published == filters.is_published)
-
         if filters.start_date_from:
             conditions.append(
                 or_(
@@ -166,6 +163,18 @@ class MarketService:
             db, "market", market_ids
         )
 
+        first_images_query = (
+            select(MarketImage)
+            .where(MarketImage.market_id.in_(market_ids))
+            .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
+        )
+        all_images = db.exec(first_images_query).all()
+        
+        first_images_by_market = {}
+        for image in all_images:
+            if image.market_id not in first_images_by_market:
+                first_images_by_market[image.market_id] = image
+
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
@@ -174,6 +183,12 @@ class MarketService:
                 if market.logo_url
                 else None
             )
+            first_image = first_images_by_market.get(market.id)
+            image_url = (
+                convert_s3_url_to_public_url(first_image.image_url)
+                if first_image
+                else logo_url
+            )
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -181,11 +196,13 @@ class MarketService:
                     location_text=market.location_text,
                     city=market.city,
                     country=market.country,
+                    latitude=market.latitude,
+                    longitude=market.longitude,
                     formatted_address=market.formatted_address,
                     start_date=market.start_date,
                     end_date=market.end_date,
                     logo_url=logo_url,
-                    is_published=market.is_published,
+                    image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
                 )
@@ -340,6 +357,18 @@ class MarketService:
             db, "market", market_ids
         )
 
+        first_images_query = (
+            select(MarketImage)
+            .where(MarketImage.market_id.in_(market_ids))
+            .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
+        )
+        all_images = db.exec(first_images_query).all()
+        
+        first_images_by_market = {}
+        for image in all_images:
+            if image.market_id not in first_images_by_market:
+                first_images_by_market[image.market_id] = image
+
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
@@ -348,6 +377,12 @@ class MarketService:
                 if market.logo_url
                 else None
             )
+            first_image = first_images_by_market.get(market.id)
+            image_url = (
+                convert_s3_url_to_public_url(first_image.image_url)
+                if first_image
+                else logo_url
+            )
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -355,11 +390,13 @@ class MarketService:
                     location_text=market.location_text,
                     city=market.city,
                     country=market.country,
+                    latitude=market.latitude,
+                    longitude=market.longitude,
                     formatted_address=market.formatted_address,
                     start_date=market.start_date,
                     end_date=market.end_date,
                     logo_url=logo_url,
-                    is_published=market.is_published,
+                    image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
                 )

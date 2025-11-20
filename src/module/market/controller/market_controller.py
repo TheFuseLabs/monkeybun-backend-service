@@ -37,20 +37,6 @@ def create_market(
     )
 
 
-@router.get("/{market_id}")
-def get_market(
-    market_id: UUID,
-    market_service: MarketServiceDep,
-    db: DatabaseDep,
-) -> StandardResponse:
-    logger.info(f"Retrieving market {market_id}")
-    market = market_service.get_market_by_id(db, market_id)
-    return Response.success(
-        message="Market retrieved successfully",
-        data=market.model_dump(mode="json"),
-    )
-
-
 @router.get("")
 def search_markets(
     market_service: MarketServiceDep,
@@ -110,6 +96,20 @@ def get_my_markets(
     return Response.success(
         message="Markets retrieved successfully",
         data=result.model_dump(mode="json"),
+    )
+
+
+@router.get("/{market_id}")
+def get_market(
+    market_id: UUID,
+    market_service: MarketServiceDep,
+    db: DatabaseDep,
+) -> StandardResponse:
+    logger.info(f"Retrieving market {market_id}")
+    market = market_service.get_market_by_id(db, market_id)
+    return Response.success(
+        message="Market retrieved successfully",
+        data=market.model_dump(mode="json"),
     )
 
 
