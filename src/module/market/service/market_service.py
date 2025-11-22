@@ -89,6 +89,9 @@ class MarketService:
         if filters.country:
             conditions.append(Market.country.ilike(f"%{filters.country}%"))
 
+        if filters.is_published is not None:
+            conditions.append(Market.is_published == filters.is_published)
+
         if filters.start_date_from:
             conditions.append(
                 or_(

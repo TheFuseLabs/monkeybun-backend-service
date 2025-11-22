@@ -140,6 +140,7 @@ class MarketResponse(BaseModel):
 class MarketSearchFilters(BaseModel):
     city: Optional[str] = None
     country: Optional[str] = None
+    is_published: Optional[bool] = None
     start_date_from: Optional[date] = None
     start_date_to: Optional[date] = None
     end_date_from: Optional[date] = None
