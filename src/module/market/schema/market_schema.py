@@ -148,6 +148,9 @@ class MarketSearchFilters(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     radius_km: Optional[float] = Field(None, ge=0, le=1000)
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    is_free: Optional[bool] = None
     limit: int = Field(default=20, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
 
@@ -167,6 +170,14 @@ class MarketSearchResponse(BaseModel):
     image_url: Optional[str] = None
     review_count: Optional[int] = None
     average_rating: Optional[float] = None
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    is_free: Optional[bool] = None
+    description: Optional[str] = None
+    cost_amount: Optional[float] = None
+    cost_currency: Optional[str] = None
+    application_deadline: Optional[datetime] = None
+    images: Optional[list[str]] = None
 
 
 class MarketListResponse(BaseModel):

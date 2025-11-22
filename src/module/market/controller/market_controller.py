@@ -51,6 +51,9 @@ def search_markets(
     latitude: Annotated[float | None, Query()] = None,
     longitude: Annotated[float | None, Query()] = None,
     radius_km: Annotated[float | None, Query()] = None,
+    aesthetic: Annotated[str | None, Query()] = None,
+    market_size: Annotated[str | None, Query()] = None,
+    is_free: Annotated[bool | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> StandardResponse:
@@ -70,6 +73,9 @@ def search_markets(
         latitude=latitude,
         longitude=longitude,
         radius_km=radius_km,
+        aesthetic=aesthetic,
+        market_size=market_size,
+        is_free=is_free,
         limit=limit,
         offset=offset,
     )

@@ -124,6 +124,15 @@ class MarketService:
                 )
             )
 
+        if filters.aesthetic:
+            conditions.append(Market.aesthetic.ilike(f"%{filters.aesthetic}%"))
+
+        if filters.market_size:
+            conditions.append(Market.market_size == filters.market_size)
+
+        if filters.is_free is not None:
+            conditions.append(Market.is_free == filters.is_free)
+
         if filters.latitude and filters.longitude and filters.radius_km:
             earth_radius_km = 6371.0
             lat_rad = func.radians(filters.latitude)
@@ -173,8 +182,13 @@ class MarketService:
         )
         all_images = db.exec(first_images_query).all()
         
+        # Group all images by market_id
+        images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
+            if image.market_id not in images_by_market:
+                images_by_market[image.market_id] = []
+            images_by_market[image.market_id].append(convert_s3_url_to_public_url(image.image_url))
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
@@ -192,6 +206,10 @@ class MarketService:
                 if first_image
                 else logo_url
             )
+            
+            # Get all images for this market
+            market_images = images_by_market.get(market.id, [])
+            
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -208,6 +226,14 @@ class MarketService:
                     image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
+                    aesthetic=market.aesthetic,
+                    market_size=market.market_size,
+                    is_free=market.is_free,
+                    description=market.description,
+                    cost_amount=market.cost_amount,
+                    cost_currency=market.cost_currency,
+                    application_deadline=market.application_deadline,
+                    images=market_images if market_images else None,
                 )
             )
 
@@ -367,8 +393,13 @@ class MarketService:
         )
         all_images = db.exec(first_images_query).all()
         
+        # Group all images by market_id
+        images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
+            if image.market_id not in images_by_market:
+                images_by_market[image.market_id] = []
+            images_by_market[image.market_id].append(convert_s3_url_to_public_url(image.image_url))
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
@@ -386,6 +417,10 @@ class MarketService:
                 if first_image
                 else logo_url
             )
+            
+            # Get all images for this market
+            market_images = images_by_market.get(market.id, [])
+            
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -402,6 +437,14 @@ class MarketService:
                     image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
+                    aesthetic=market.aesthetic,
+                    market_size=market.market_size,
+                    is_free=market.is_free,
+                    description=market.description,
+                    cost_amount=market.cost_amount,
+                    cost_currency=market.cost_currency,
+                    application_deadline=market.application_deadline,
+                    images=market_images if market_images else None,
                 )
             )
 
