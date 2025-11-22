@@ -194,6 +194,4 @@ cython_debug/
 .cursorindexingignore
 
 # Custom
-_experiments
-extracted_repos
-rezzy-lcs-server-key-pair.pem
+key.json

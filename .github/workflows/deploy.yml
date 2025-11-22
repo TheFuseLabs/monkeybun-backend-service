@@ -1,0 +1,90 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+      - deploy
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: poptheshop
+  REGION: us-central1
+  SERVICE_NAME: monkeybun-backend-service
+  ARTIFACT_REGISTRY_REPO: monkeybun-backend-service
+  IMAGE_NAME: monkeybun-backend-service
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$IMAGE_NAME:$GITHUB_SHA \
+            -t $REGION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$IMAGE_NAME:latest .
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$IMAGE_NAME:$GITHUB_SHA
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$IMAGE_NAME:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          echo "Fetching secrets from Secrets Manager..."
+
+          gcloud run deploy $SERVICE_NAME \
+            --image $REGION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$IMAGE_NAME:$GITHUB_SHA \
+            --platform managed \
+            --region $REGION \
+            --project $PROJECT_ID \
+            --port 8000 \
+            --allow-unauthenticated \
+            --memory 2Gi \
+            --cpu 2 \
+            --timeout 300 \
+            --max-instances 1 \
+            --min-instances 1 \
+            --set-env-vars PYTHON_ENV=PROD \
+            --set-secrets=POSTGRES_URL=mbbs_POSTGRES_URL:latest \
+            --set-secrets=LOG_LEVEL=mbbs_LOG_LEVEL:latest \
+            --set-secrets=SUPABASE_PUBLISHABLE_KEY=mbbs_SUPABASE_PUBLISHABLE_KEY:latest \
+            --set-secrets=SUPABASE_PROJECT_URL=mbbs_SUPABASE_PROJECT_URL:latest \
+            --set-secrets=SUPABASE_PROJECT_REF=mbbs_SUPABASE_PROJECT_REF:latest \
+            --set-secrets=SUPABASE_JWT_AUDIENCE=mbbs_SUPABASE_JWT_AUDIENCE:latest \
+            --set-secrets=SUPABASE_SERVICE_ROLE_KEY=mbbs_SUPABASE_SERVICE_ROLE_KEY:latest \
+            --set-secrets=S3_REGION=mbbs_S3_REGION:latest \
+            --set-secrets=S3_ACCESS_KEY_ID=mbbs_S3_ACCESS_KEY_ID:latest \
+            --set-secrets=S3_SECRET_ACCESS_KEY_ID=mbbs_S3_SECRET_ACCESS_KEY_ID:latest \
+            --set-secrets=S3_ENPOINT=mbbs_S3_ENPOINT:latest \
+            --set-secrets=SUPABASE_DEV_USERNAME=mbbs_SUPABASE_DEV_USERNAME:latest \
+            --set-secrets=SUPABASE_DEV_PASSWORD=mbbs_SUPABASE_DEV_PASSWORD:latest \
+            --set-secrets=GOOGLE_PLACES_API_KEY=mbbs_GOOGLE_PLACES_API_KEY:latest \
+            --set-secrets=RESEND_API_KEY=mbbs_RESEND_API_KEY:latest
+
+      - name: Get service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME \
+            --region $REGION \
+            --project $PROJECT_ID \
+            --format 'value(status.url)')
+          echo "Service deployed successfully!"
+          echo "Service URL: $SERVICE_URL"
