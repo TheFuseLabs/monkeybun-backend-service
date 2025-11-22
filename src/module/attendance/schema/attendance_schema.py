@@ -33,9 +33,25 @@ class AttendanceListFilters(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
+class AttendanceWithMarketResponse(BaseModel):
+    id: UUID
+    market_id: UUID
+    user_id: UUID
+    status: str
+    calendar_event_id: Optional[str] = None
+    created_at: datetime
+    market: Optional[dict] = None
+
+
 class AttendanceListResponse(BaseModel):
     attendances: list[AttendanceResponse]
     total: int
     limit: int
     offset: int
 
+
+class AttendanceListWithMarketsResponse(BaseModel):
+    attendances: list[AttendanceWithMarketResponse]
+    total: int
+    limit: int
+    offset: int

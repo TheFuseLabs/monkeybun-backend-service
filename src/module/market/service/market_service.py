@@ -1,12 +1,21 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, exists, func, or_
 from sqlmodel import Session, select
 
 from src.common.utils.s3_url import convert_s3_url_to_public_url
-from src.database.postgres.models.db_models import Market, MarketImage, PendingImage
+from src.database.postgres.models.db_models import (
+    Application,
+    Business,
+    Market,
+    MarketAttendance,
+    MarketFavorite,
+    MarketImage,
+    PendingImage,
+)
 from src.downstream.google.google_places_client import GooglePlacesClient
 from src.module.market.schema.market_schema import (
     MarketCreateRequest,
@@ -77,23 +86,21 @@ class MarketService:
         return self._get_market_with_images(db, market_id)
 
     def search_markets(
-        self, db: Session, filters: MarketSearchFilters
+        self, db: Session, filters: MarketSearchFilters, user_id: Optional[UUID] = None
     ) -> MarketListResponse:
-        query = select(Market)
-
-        conditions = []
+        filter_conditions = []
 
         if filters.city:
-            conditions.append(Market.city.ilike(f"%{filters.city}%"))
+            filter_conditions.append(Market.city.ilike(f"%{filters.city}%"))
 
         if filters.country:
-            conditions.append(Market.country.ilike(f"%{filters.country}%"))
+            filter_conditions.append(Market.country.ilike(f"%{filters.country}%"))
 
         if filters.is_published is not None:
-            conditions.append(Market.is_published == filters.is_published)
+            filter_conditions.append(Market.is_published == filters.is_published)
 
         if filters.start_date_from:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.start_date >= filters.start_date_from,
                     Market.start_date.is_(None),
@@ -101,7 +108,7 @@ class MarketService:
             )
 
         if filters.start_date_to:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.start_date <= filters.start_date_to,
                     Market.start_date.is_(None),
@@ -109,7 +116,7 @@ class MarketService:
             )
 
         if filters.end_date_from:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.end_date >= filters.end_date_from,
                     Market.end_date.is_(None),
@@ -117,12 +124,21 @@ class MarketService:
             )
 
         if filters.end_date_to:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.end_date <= filters.end_date_to,
                     Market.end_date.is_(None),
                 )
             )
+
+        if filters.aesthetic:
+            filter_conditions.append(Market.aesthetic.ilike(f"%{filters.aesthetic}%"))
+
+        if filters.market_size:
+            filter_conditions.append(Market.market_size == filters.market_size)
+
+        if filters.is_free is not None:
+            filter_conditions.append(Market.is_free == filters.is_free)
 
         if filters.latitude and filters.longitude and filters.radius_km:
             earth_radius_km = 6371.0
@@ -139,7 +155,7 @@ class MarketService:
             )
             distance = 2 * earth_radius_km * func.asin(func.sqrt(haversine))
 
-            conditions.append(
+            filter_conditions.append(
                 and_(
                     Market.latitude.isnot(None),
                     Market.longitude.isnot(None),
@@ -147,12 +163,61 @@ class MarketService:
                 )
             )
 
-        if conditions:
-            query = query.where(and_(*conditions))
+        base_condition = (
+            Market.organizer_user_id != user_id if user_id is not None else None
+        )
 
-        total_query = select(func.count()).select_from(Market)
-        if conditions:
-            total_query = total_query.where(and_(*conditions))
+        favorite_exists = None
+        if user_id is not None:
+            favorite_exists = exists(
+                select(MarketFavorite.id).where(
+                    and_(
+                        MarketFavorite.market_id == Market.id,
+                        MarketFavorite.user_id == user_id,
+                    )
+                )
+            )
+
+        query = select(Market)
+        where_clause = None
+
+        has_filters = len(filter_conditions) > 0
+
+        if base_condition is not None and has_filters and favorite_exists is not None:
+            filter_condition = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+            where_clause = or_(and_(base_condition, filter_condition), favorite_exists)
+        elif base_condition is not None and has_filters:
+            where_clause = and_(base_condition, *filter_conditions)
+        elif base_condition is not None and favorite_exists is not None:
+            where_clause = or_(base_condition, favorite_exists)
+        elif base_condition is not None:
+            where_clause = base_condition
+        elif has_filters and favorite_exists is not None:
+            filter_condition = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+            where_clause = or_(filter_condition, favorite_exists)
+        elif has_filters:
+            where_clause = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+        elif favorite_exists is not None:
+            where_clause = favorite_exists
+
+        if where_clause is not None:
+            query = query.where(where_clause)
+
+        total_query = select(func.count(Market.id))
+        if where_clause is not None:
+            total_query = total_query.where(where_clause)
 
         total = db.exec(total_query).one()
 
@@ -166,21 +231,71 @@ class MarketService:
             db, "market", market_ids
         )
 
+        attendance_counts_query = (
+            select(
+                MarketAttendance.market_id,
+                func.count(MarketAttendance.id).label("count"),
+            )
+            .where(MarketAttendance.market_id.in_(market_ids))
+            .group_by(MarketAttendance.market_id)
+        )
+        attendance_counts_result = db.exec(attendance_counts_query).all()
+        attendance_counts = {row[0]: row[1] for row in attendance_counts_result}
+
+        favorited_market_ids = set()
+        attending_market_ids = set()
+        if user_id is not None and market_ids:
+            favorites_query = select(MarketFavorite.market_id).where(
+                and_(
+                    MarketFavorite.user_id == user_id,
+                    MarketFavorite.market_id.in_(market_ids),
+                )
+            )
+            favorited_results = db.exec(favorites_query).all()
+            favorited_market_ids = {
+                row[0]
+                if hasattr(row, "__getitem__") and not isinstance(row, UUID)
+                else row
+                for row in favorited_results
+            }
+
+            attendances_query = select(MarketAttendance.market_id).where(
+                and_(
+                    MarketAttendance.user_id == user_id,
+                    MarketAttendance.market_id.in_(market_ids),
+                )
+            )
+            attending_results = db.exec(attendances_query).all()
+            attending_market_ids = {
+                row[0]
+                if hasattr(row, "__getitem__") and not isinstance(row, UUID)
+                else row
+                for row in attending_results
+            }
+
         first_images_query = (
             select(MarketImage)
             .where(MarketImage.market_id.in_(market_ids))
             .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
         )
         all_images = db.exec(first_images_query).all()
-        
+
+        # Group all images by market_id
+        images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
+            if image.market_id not in images_by_market:
+                images_by_market[image.market_id] = []
+            images_by_market[image.market_id].append(
+                convert_s3_url_to_public_url(image.image_url)
+            )
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            attendance_count = attendance_counts.get(market.id, 0)
             logo_url = (
                 convert_s3_url_to_public_url(market.logo_url)
                 if market.logo_url
@@ -192,6 +307,17 @@ class MarketService:
                 if first_image
                 else logo_url
             )
+
+            # Get all images for this market
+            market_images = images_by_market.get(market.id, [])
+
+            is_favorited = (
+                market.id in favorited_market_ids if user_id is not None else None
+            )
+            is_attending = (
+                market.id in attending_market_ids if user_id is not None else None
+            )
+
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -208,14 +334,40 @@ class MarketService:
                     image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
+                    aesthetic=market.aesthetic,
+                    market_size=market.market_size,
+                    is_free=market.is_free,
+                    description=market.description,
+                    cost_amount=market.cost_amount,
+                    cost_currency=market.cost_currency,
+                    application_deadline=market.application_deadline,
+                    images=market_images if market_images else None,
+                    attendance_count=attendance_count,
+                    is_favorited=is_favorited,
+                    is_attending=is_attending,
                 )
             )
+
+        applied_market_ids = None
+        if user_id is not None:
+            user_businesses = db.exec(
+                select(Business).where(Business.owner_user_id == user_id)
+            ).all()
+            if user_businesses:
+                business_ids = [business.id for business in user_businesses]
+                applied_applications = db.exec(
+                    select(Application.market_id)
+                    .where(Application.business_id.in_(business_ids))
+                    .distinct()
+                ).all()
+                applied_market_ids = [app[0] for app in applied_applications]
 
         return MarketListResponse(
             markets=market_responses,
             total=total,
             limit=filters.limit,
             offset=filters.offset,
+            applied_market_ids=applied_market_ids,
         )
 
     def update_market(
@@ -318,6 +470,11 @@ class MarketService:
             db, "market", market_id
         )
 
+        attendance_count_query = select(func.count(MarketAttendance.id)).where(
+            MarketAttendance.market_id == market_id
+        )
+        attendance_count = db.exec(attendance_count_query).one() or 0
+
         market_dict = market.model_dump()
         if market_dict.get("logo_url"):
             market_dict["logo_url"] = convert_s3_url_to_public_url(
@@ -335,6 +492,7 @@ class MarketService:
         ]
         market_dict["review_count"] = review_count
         market_dict["average_rating"] = average_rating
+        market_dict["attendance_count"] = attendance_count
 
         return MarketResponse.model_validate(market_dict)
 
@@ -360,21 +518,40 @@ class MarketService:
             db, "market", market_ids
         )
 
+        attendance_counts_query = (
+            select(
+                MarketAttendance.market_id,
+                func.count(MarketAttendance.id).label("count"),
+            )
+            .where(MarketAttendance.market_id.in_(market_ids))
+            .group_by(MarketAttendance.market_id)
+        )
+        attendance_counts_result = db.exec(attendance_counts_query).all()
+        attendance_counts = {row[0]: row[1] for row in attendance_counts_result}
+
         first_images_query = (
             select(MarketImage)
             .where(MarketImage.market_id.in_(market_ids))
             .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
         )
         all_images = db.exec(first_images_query).all()
-        
+
+        # Group all images by market_id
+        images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
+            if image.market_id not in images_by_market:
+                images_by_market[image.market_id] = []
+            images_by_market[image.market_id].append(
+                convert_s3_url_to_public_url(image.image_url)
+            )
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            attendance_count = attendance_counts.get(market.id, 0)
             logo_url = (
                 convert_s3_url_to_public_url(market.logo_url)
                 if market.logo_url
@@ -386,6 +563,10 @@ class MarketService:
                 if first_image
                 else logo_url
             )
+
+            # Get all images for this market
+            market_images = images_by_market.get(market.id, [])
+
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -402,6 +583,15 @@ class MarketService:
                     image_url=image_url,
                     review_count=review_count,
                     average_rating=average_rating,
+                    aesthetic=market.aesthetic,
+                    market_size=market.market_size,
+                    is_free=market.is_free,
+                    description=market.description,
+                    cost_amount=market.cost_amount,
+                    cost_currency=market.cost_currency,
+                    application_deadline=market.application_deadline,
+                    images=market_images if market_images else None,
+                    attendance_count=attendance_count,
                 )
             )
 

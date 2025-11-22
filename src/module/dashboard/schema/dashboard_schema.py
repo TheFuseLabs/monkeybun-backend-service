@@ -18,4 +18,3 @@ class DashboardStatsResponse(BaseModel):
     applications: ApplicationStats
     attendances_count: int
     reviews_written_count: int
-

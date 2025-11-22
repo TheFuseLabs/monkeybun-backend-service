@@ -102,3 +102,21 @@ class ApplicationListResponse(BaseModel):
     limit: int
     offset: int
 
+
+class ApplicationWithDetailsResponse(BaseModel):
+    id: UUID
+    market_id: UUID
+    business_id: UUID
+    status: ApplicationStatus
+    applied_at: datetime
+    rejection_reason: Optional[str] = None
+    created_at: datetime
+    market: Optional[dict] = None
+    business: Optional[dict] = None
+
+
+class ApplicationListWithDetailsResponse(BaseModel):
+    applications: list[ApplicationWithDetailsResponse]
+    total: int
+    limit: int
+    offset: int

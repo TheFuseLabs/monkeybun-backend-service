@@ -5,12 +5,12 @@ Revises: fc7102b92fe0
 Create Date: 2025-01-27 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 import sqlmodel
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "63310c522125"
@@ -33,4 +33,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("businesses", "facebook_handle")
     op.drop_column("businesses", "twitter_handle")
-

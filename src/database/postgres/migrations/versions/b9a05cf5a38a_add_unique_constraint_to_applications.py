@@ -5,11 +5,10 @@ Revises: 52bd2a8c1586
 Create Date: 2025-01-27 15:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = "b9a05cf5a38a"
@@ -32,4 +31,3 @@ def downgrade() -> None:
         "applications",
         type_="unique",
     )
-

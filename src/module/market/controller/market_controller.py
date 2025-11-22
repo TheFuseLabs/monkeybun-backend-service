@@ -8,7 +8,7 @@ from src.common.logger import logger
 from src.common.utils.response import Response, StandardResponse, Status
 from src.database.dependency.db_dependency import DatabaseDep
 from src.database.postgres.models.db_models import Market, MarketImage
-from src.module.auth.dependency.auth_dependency import get_current_user
+from src.module.auth.dependency.auth_dependency import get_current_user, get_optional_user
 from src.module.market.dependency.market_dependency import MarketServiceDep
 from src.module.market.schema.market_schema import (
     MarketCreateRequest,
@@ -41,6 +41,7 @@ def create_market(
 def search_markets(
     market_service: MarketServiceDep,
     db: DatabaseDep,
+    current_user: Annotated[UUID | None, Depends(get_optional_user)] = None,
     city: Annotated[str | None, Query()] = None,
     country: Annotated[str | None, Query()] = None,
     is_published: Annotated[bool | None, Query()] = None,
@@ -51,6 +52,9 @@ def search_markets(
     latitude: Annotated[float | None, Query()] = None,
     longitude: Annotated[float | None, Query()] = None,
     radius_km: Annotated[float | None, Query()] = None,
+    aesthetic: Annotated[str | None, Query()] = None,
+    market_size: Annotated[str | None, Query()] = None,
+    is_free: Annotated[bool | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> StandardResponse:
@@ -70,11 +74,14 @@ def search_markets(
         latitude=latitude,
         longitude=longitude,
         radius_km=radius_km,
+        aesthetic=aesthetic,
+        market_size=market_size,
+        is_free=is_free,
         limit=limit,
         offset=offset,
     )
 
-    result = market_service.search_markets(db, filters)
+    result = market_service.search_markets(db, filters, current_user)
     return Response.success(
         message="Markets retrieved successfully",
         data=result.model_dump(mode="json"),

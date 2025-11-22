@@ -14,4 +14,3 @@ def get_upload_service(
 
 
 UploadServiceDep = Annotated[UploadService, Depends(get_upload_service)]
-

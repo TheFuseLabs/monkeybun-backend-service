@@ -13,9 +13,17 @@ class PostgresClient:
 
     def _create_engine(self):
         try:
-            return create_engine(self.database_url)
+            return create_engine(
+                self.database_url,
+                pool_size=10,
+                max_overflow=5,
+                pool_pre_ping=True,
+                pool_recycle=3600,
+                pool_timeout=30,
+                echo=False,
+            )
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"{str(e)}")
+            raise RuntimeError(f"Failed to create database engine: {str(e)}") from e
 
     def get_session(self) -> Generator[Session, None, None]:
         try:

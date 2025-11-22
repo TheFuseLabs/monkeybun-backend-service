@@ -39,7 +39,9 @@ class MarketCreateRequest(BaseModel):
             if self.cost_currency is None:
                 raise ValueError("cost_currency is required when is_free is False")
             if not self.payment_instructions:
-                raise ValueError("payment_instructions is required when is_free is False")
+                raise ValueError(
+                    "payment_instructions is required when is_free is False"
+                )
         return self
 
 
@@ -52,7 +54,9 @@ class MarketUpdateRequest(BaseModel):
     google_place_id: Optional[str] = None
     location_text: Optional[str] = None
     aesthetic: Optional[str] = None
-    market_size: Optional[Literal["Less than 10", "10-99", "100-499", "500-999", "1000+"]] = None
+    market_size: Optional[
+        Literal["Less than 10", "10-99", "100-499", "500-999", "1000+"]
+    ] = None
     target_vendors: Optional[str] = None
     optional_rules: Optional[str] = None
     contract_url: Optional[str] = None
@@ -76,8 +80,13 @@ class MarketUpdateRequest(BaseModel):
                 raise ValueError("cost_amount is required when is_free is False")
             if self.cost_currency is None:
                 raise ValueError("cost_currency is required when is_free is False")
-            if self.payment_instructions is None or self.payment_instructions.strip() == "":
-                raise ValueError("payment_instructions is required when is_free is False")
+            if (
+                self.payment_instructions is None
+                or self.payment_instructions.strip() == ""
+            ):
+                raise ValueError(
+                    "payment_instructions is required when is_free is False"
+                )
         return self
 
 
@@ -135,6 +144,7 @@ class MarketResponse(BaseModel):
     images: Optional[list[MarketImageResponse]] = None
     review_count: Optional[int] = None
     average_rating: Optional[float] = None
+    attendance_count: Optional[int] = None
 
 
 class MarketSearchFilters(BaseModel):
@@ -148,6 +158,9 @@ class MarketSearchFilters(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     radius_km: Optional[float] = Field(None, ge=0, le=1000)
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    is_free: Optional[bool] = None
     limit: int = Field(default=20, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
 
@@ -167,6 +180,17 @@ class MarketSearchResponse(BaseModel):
     image_url: Optional[str] = None
     review_count: Optional[int] = None
     average_rating: Optional[float] = None
+    aesthetic: Optional[str] = None
+    market_size: Optional[str] = None
+    is_free: Optional[bool] = None
+    description: Optional[str] = None
+    cost_amount: Optional[float] = None
+    cost_currency: Optional[str] = None
+    application_deadline: Optional[datetime] = None
+    images: Optional[list[str]] = None
+    attendance_count: Optional[int] = None
+    is_favorited: Optional[bool] = None
+    is_attending: Optional[bool] = None
 
 
 class MarketListResponse(BaseModel):
@@ -174,3 +198,4 @@ class MarketListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    applied_market_ids: Optional[list[UUID]] = None

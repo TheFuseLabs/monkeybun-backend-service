@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -65,11 +66,14 @@ class BusinessService:
         return self._get_business_with_images(db, business_id)
 
     def search_businesses(
-        self, db: Session, filters: BusinessSearchFilters
+        self, db: Session, filters: BusinessSearchFilters, user_id: Optional[UUID] = None
     ) -> BusinessListResponse:
         query = select(Business)
 
         conditions = []
+
+        if user_id is not None:
+            conditions.append(Business.owner_user_id != user_id)
 
         if filters.category:
             conditions.append(Business.category.ilike(f"%{filters.category}%"))
@@ -214,7 +218,11 @@ class BusinessService:
         business_responses = []
         for business in businesses:
             review_count, average_rating = review_stats.get(business.id, (0, None))
-            logo_url = convert_s3_url_to_public_url(business.logo_url) if business.logo_url else None
+            logo_url = (
+                convert_s3_url_to_public_url(business.logo_url)
+                if business.logo_url
+                else None
+            )
             business_responses.append(
                 BusinessSearchResponse(
                     id=business.id,
@@ -255,7 +263,9 @@ class BusinessService:
 
         business_dict = business.model_dump()
         if business_dict.get("logo_url"):
-            business_dict["logo_url"] = convert_s3_url_to_public_url(business_dict["logo_url"])
+            business_dict["logo_url"] = convert_s3_url_to_public_url(
+                business_dict["logo_url"]
+            )
         business_dict["images"] = [
             BusinessImageResponse(
                 id=img.id,
@@ -263,7 +273,8 @@ class BusinessService:
                 image_url=convert_s3_url_to_public_url(img.image_url),
                 caption=img.caption,
                 sort_order=img.sort_order,
-            ) for img in images
+            )
+            for img in images
         ]
         business_dict["review_count"] = review_count
         business_dict["average_rating"] = average_rating

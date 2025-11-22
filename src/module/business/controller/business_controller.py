@@ -7,7 +7,7 @@ from src.common.logger import logger
 from src.common.utils.response import Response, StandardResponse, Status
 from src.database.dependency.db_dependency import DatabaseDep
 from src.database.postgres.models.db_models import Business, BusinessImage
-from src.module.auth.dependency.auth_dependency import get_current_user
+from src.module.auth.dependency.auth_dependency import get_current_user, get_optional_user
 from src.module.business.dependency.business_dependency import BusinessServiceDep
 from src.module.business.schema.business_schema import (
     BusinessCreateRequest,
@@ -72,6 +72,7 @@ def get_business(
 def search_businesses(
     business_service: BusinessServiceDep,
     db: DatabaseDep,
+    current_user: Annotated[UUID | None, Depends(get_optional_user)] = None,
     category: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -85,7 +86,7 @@ def search_businesses(
         offset=offset,
     )
 
-    result = business_service.search_businesses(db, filters)
+    result = business_service.search_businesses(db, filters, current_user)
     return Response.success(
         message="Businesses retrieved successfully",
         data=result.model_dump(mode="json"),

@@ -125,5 +125,3 @@ def create_token():
         raise HTTPException(
             status_code=500, detail="Authentication service unavailable"
         )
-
-
