@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, exists, func, or_
 from sqlmodel import Session, select
 
 from src.common.utils.s3_url import convert_s3_url_to_public_url
@@ -88,24 +88,19 @@ class MarketService:
     def search_markets(
         self, db: Session, filters: MarketSearchFilters, user_id: Optional[UUID] = None
     ) -> MarketListResponse:
-        query = select(Market)
-
-        conditions = []
-
-        if user_id is not None:
-            conditions.append(Market.organizer_user_id != user_id)
+        filter_conditions = []
 
         if filters.city:
-            conditions.append(Market.city.ilike(f"%{filters.city}%"))
+            filter_conditions.append(Market.city.ilike(f"%{filters.city}%"))
 
         if filters.country:
-            conditions.append(Market.country.ilike(f"%{filters.country}%"))
+            filter_conditions.append(Market.country.ilike(f"%{filters.country}%"))
 
         if filters.is_published is not None:
-            conditions.append(Market.is_published == filters.is_published)
+            filter_conditions.append(Market.is_published == filters.is_published)
 
         if filters.start_date_from:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.start_date >= filters.start_date_from,
                     Market.start_date.is_(None),
@@ -113,7 +108,7 @@ class MarketService:
             )
 
         if filters.start_date_to:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.start_date <= filters.start_date_to,
                     Market.start_date.is_(None),
@@ -121,7 +116,7 @@ class MarketService:
             )
 
         if filters.end_date_from:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.end_date >= filters.end_date_from,
                     Market.end_date.is_(None),
@@ -129,7 +124,7 @@ class MarketService:
             )
 
         if filters.end_date_to:
-            conditions.append(
+            filter_conditions.append(
                 or_(
                     Market.end_date <= filters.end_date_to,
                     Market.end_date.is_(None),
@@ -137,13 +132,13 @@ class MarketService:
             )
 
         if filters.aesthetic:
-            conditions.append(Market.aesthetic.ilike(f"%{filters.aesthetic}%"))
+            filter_conditions.append(Market.aesthetic.ilike(f"%{filters.aesthetic}%"))
 
         if filters.market_size:
-            conditions.append(Market.market_size == filters.market_size)
+            filter_conditions.append(Market.market_size == filters.market_size)
 
         if filters.is_free is not None:
-            conditions.append(Market.is_free == filters.is_free)
+            filter_conditions.append(Market.is_free == filters.is_free)
 
         if filters.latitude and filters.longitude and filters.radius_km:
             earth_radius_km = 6371.0
@@ -160,7 +155,7 @@ class MarketService:
             )
             distance = 2 * earth_radius_km * func.asin(func.sqrt(haversine))
 
-            conditions.append(
+            filter_conditions.append(
                 and_(
                     Market.latitude.isnot(None),
                     Market.longitude.isnot(None),
@@ -168,12 +163,61 @@ class MarketService:
                 )
             )
 
-        if conditions:
-            query = query.where(and_(*conditions))
+        base_condition = (
+            Market.organizer_user_id != user_id if user_id is not None else None
+        )
 
-        total_query = select(func.count()).select_from(Market)
-        if conditions:
-            total_query = total_query.where(and_(*conditions))
+        favorite_exists = None
+        if user_id is not None:
+            favorite_exists = exists(
+                select(MarketFavorite.id).where(
+                    and_(
+                        MarketFavorite.market_id == Market.id,
+                        MarketFavorite.user_id == user_id,
+                    )
+                )
+            )
+
+        query = select(Market)
+        where_clause = None
+
+        has_filters = len(filter_conditions) > 0
+
+        if base_condition is not None and has_filters and favorite_exists is not None:
+            filter_condition = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+            where_clause = or_(and_(base_condition, filter_condition), favorite_exists)
+        elif base_condition is not None and has_filters:
+            where_clause = and_(base_condition, *filter_conditions)
+        elif base_condition is not None and favorite_exists is not None:
+            where_clause = or_(base_condition, favorite_exists)
+        elif base_condition is not None:
+            where_clause = base_condition
+        elif has_filters and favorite_exists is not None:
+            filter_condition = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+            where_clause = or_(filter_condition, favorite_exists)
+        elif has_filters:
+            where_clause = (
+                filter_conditions[0]
+                if len(filter_conditions) == 1
+                else and_(*filter_conditions)
+            )
+        elif favorite_exists is not None:
+            where_clause = favorite_exists
+
+        if where_clause is not None:
+            query = query.where(where_clause)
+
+        total_query = select(func.count(Market.id))
+        if where_clause is not None:
+            total_query = total_query.where(where_clause)
 
         total = db.exec(total_query).one()
 
@@ -208,7 +252,12 @@ class MarketService:
                 )
             )
             favorited_results = db.exec(favorites_query).all()
-            favorited_market_ids = {row[0] for row in favorited_results}
+            favorited_market_ids = {
+                row[0]
+                if hasattr(row, "__getitem__") and not isinstance(row, UUID)
+                else row
+                for row in favorited_results
+            }
 
             attendances_query = select(MarketAttendance.market_id).where(
                 and_(
@@ -217,7 +266,12 @@ class MarketService:
                 )
             )
             attending_results = db.exec(attendances_query).all()
-            attending_market_ids = {row[0] for row in attending_results}
+            attending_market_ids = {
+                row[0]
+                if hasattr(row, "__getitem__") and not isinstance(row, UUID)
+                else row
+                for row in attending_results
+            }
 
         first_images_query = (
             select(MarketImage)
@@ -257,8 +311,12 @@ class MarketService:
             # Get all images for this market
             market_images = images_by_market.get(market.id, [])
 
-            is_favorited = market.id in favorited_market_ids if user_id is not None else None
-            is_attending = market.id in attending_market_ids if user_id is not None else None
+            is_favorited = (
+                market.id in favorited_market_ids if user_id is not None else None
+            )
+            is_attending = (
+                market.id in attending_market_ids if user_id is not None else None
+            )
 
             market_responses.append(
                 MarketSearchResponse(
