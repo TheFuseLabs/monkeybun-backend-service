@@ -10,4 +10,3 @@ def get_attendance_service() -> AttendanceService:
 
 
 AttendanceServiceDep = Annotated[AttendanceService, Depends(get_attendance_service)]
-

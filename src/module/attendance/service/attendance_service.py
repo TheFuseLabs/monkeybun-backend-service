@@ -158,4 +158,3 @@ class AttendanceService:
             offset=offset,
         )
         return self.list_attendances(db, filters)
-

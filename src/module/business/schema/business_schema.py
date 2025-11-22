@@ -91,4 +91,3 @@ class BusinessListResponse(BaseModel):
     total: int
     limit: int
     offset: int
-

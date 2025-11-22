@@ -214,7 +214,11 @@ class BusinessService:
         business_responses = []
         for business in businesses:
             review_count, average_rating = review_stats.get(business.id, (0, None))
-            logo_url = convert_s3_url_to_public_url(business.logo_url) if business.logo_url else None
+            logo_url = (
+                convert_s3_url_to_public_url(business.logo_url)
+                if business.logo_url
+                else None
+            )
             business_responses.append(
                 BusinessSearchResponse(
                     id=business.id,
@@ -255,7 +259,9 @@ class BusinessService:
 
         business_dict = business.model_dump()
         if business_dict.get("logo_url"):
-            business_dict["logo_url"] = convert_s3_url_to_public_url(business_dict["logo_url"])
+            business_dict["logo_url"] = convert_s3_url_to_public_url(
+                business_dict["logo_url"]
+            )
         business_dict["images"] = [
             BusinessImageResponse(
                 id=img.id,
@@ -263,7 +269,8 @@ class BusinessService:
                 image_url=convert_s3_url_to_public_url(img.image_url),
                 caption=img.caption,
                 sort_order=img.sort_order,
-            ) for img in images
+            )
+            for img in images
         ]
         business_dict["review_count"] = review_count
         business_dict["average_rating"] = average_rating

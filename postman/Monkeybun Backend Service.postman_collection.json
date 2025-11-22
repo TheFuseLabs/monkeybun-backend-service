@@ -144,12 +144,6 @@
         {
           "name": "Get Business",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -318,7 +312,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"market_name\": \"Summer Artisan Market\",\n    \"contact_first_name\": \"Jane\",\n    \"contact_last_name\": \"Smith\",\n    \"email\": \"aryankhurana1511@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"google_place_id\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\",\n    \"location_text\": \"Central Park, New York\",\n    \"aesthetic\": \"Boho-chic, vintage, handmade\",\n    \"market_size\": \"50-100 vendors\",\n    \"target_vendors\": \"Artisans, crafters, local makers\",\n    \"optional_rules\": \"No pets allowed. Bring your own bags.\",\n    \"contract_url\": \"https://example.com/contract.pdf\",\n    \"description\": \"A vibrant summer market featuring local artisans and crafters\",\n    \"start_date\": \"2024-06-01\",\n    \"end_date\": \"2024-08-31\",\n    \"application_deadline\": \"2024-05-15T23:59:59Z\",\n    \"is_published\": false,\n    \"email_package_url\": \"https://example.com/email-package.pdf\",\n    \"payment_instructions\": \"Payment via bank transfer or PayPal\",\n    \"application_form\": {\n        \"questions\": [\n            {\n                \"id\": \"q1\",\n                \"type\": \"text\",\n                \"label\": \"Tell us about your products\",\n                \"required\": true\n            }\n        ]\n    },\n    \"logo_url\": \"https://example.com/logo.jpg\",\n    \"image_urls\": [\"https://example.com/image1.jpg\"]\n}",
+              "raw": "{\n    \"market_name\": \"Summer Artisan Market\",\n    \"contact_first_name\": \"Jane\",\n    \"contact_last_name\": \"Smith\",\n    \"email\": \"aryankhurana1511@gmail.com\",\n    \"phone\": \"+1234567890\",\n    \"google_place_id\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\",\n    \"location_text\": \"Central Park, New York\",\n    \"aesthetic\": \"Boho-chic, vintage, handmade\",\n    \"market_size\": \"100-499\",\n    \"target_vendors\": \"Artisans, crafters, local makers\",\n    \"optional_rules\": \"No pets allowed. Bring your own bags.\",\n    \"contract_url\": \"https://example.com/contract.pdf\",\n    \"description\": \"A vibrant summer market featuring local artisans and crafters\",\n    \"start_date\": \"2024-06-01\",\n    \"end_date\": \"2024-08-31\",\n    \"application_deadline\": \"2024-05-15T23:59:59Z\",\n    \"email_package_url\": \"https://example.com/email-package.pdf\",\n    \"payment_instructions\": \"Payment via bank transfer or PayPal\",\n    \"application_form\": {\n        \"questions\": [\n            {\n                \"id\": \"q1\",\n                \"type\": \"text\",\n                \"label\": \"Tell us about your products\",\n                \"required\": true\n            }\n        ]\n    },\n    \"logo_url\": \"https://example.com/logo.jpg\",\n    \"image_urls\": [\"https://example.com/image1.jpg\"],\n    \"is_free\": false,\n    \"cost_amount\": 150.00,\n    \"cost_currency\": \"USD\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -331,12 +325,6 @@
         {
           "name": "Fetch a Market",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -349,21 +337,26 @@
         {
           "name": "Search Markets",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/market?city=New York&is_published=true&limit=20&offset=0",
+              "raw": "{{host}}/market?city=New York&country=USA&is_published=true&start_date_from=2024-06-01&start_date_to=2024-12-31&end_date_from=2024-06-01&end_date_to=2024-12-31&latitude=40.7128&longitude=-74.0060&radius_km=50&aesthetic=Boho-chic&market_size=100-499&is_free=false&limit=20&offset=0",
               "host": ["{{host}}"],
               "path": ["market"],
               "query": [
                 { "key": "city", "value": "New York" },
+                { "key": "country", "value": "USA" },
                 { "key": "is_published", "value": "true" },
+                { "key": "start_date_from", "value": "2024-06-01" },
+                { "key": "start_date_to", "value": "2024-12-31" },
+                { "key": "end_date_from", "value": "2024-06-01" },
+                { "key": "end_date_to", "value": "2024-12-31" },
+                { "key": "latitude", "value": "40.7128" },
+                { "key": "longitude", "value": "-74.0060" },
+                { "key": "radius_km", "value": "50" },
+                { "key": "aesthetic", "value": "Boho-chic" },
+                { "key": "market_size", "value": "100-499" },
+                { "key": "is_free", "value": "false" },
                 { "key": "limit", "value": "20" },
                 { "key": "offset", "value": "0" }
               ]
@@ -782,12 +775,6 @@
         {
           "name": "Get Attendance",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -800,20 +787,15 @@
         {
           "name": "List Attendances",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/attendance?market_id={{marketId}}&status=attending&limit=20&offset=0",
+              "raw": "{{host}}/attendance?market_id={{marketId}}&user_id=&status=attending&limit=20&offset=0",
               "host": ["{{host}}"],
               "path": ["attendance"],
               "query": [
                 { "key": "market_id", "value": "{{marketId}}" },
+                { "key": "user_id", "value": "" },
                 { "key": "status", "value": "attending" },
                 { "key": "limit", "value": "20" },
                 { "key": "offset", "value": "0" }
@@ -929,12 +911,6 @@
         {
           "name": "Get Review",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -947,21 +923,16 @@
         {
           "name": "List Reviews",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/review?target_type=business&target_id={{businessId}}&is_published=true&limit=20&offset=0",
+              "raw": "{{host}}/review?target_type=business&target_id={{businessId}}&author_user_id=&is_published=true&limit=20&offset=0",
               "host": ["{{host}}"],
               "path": ["review"],
               "query": [
                 { "key": "target_type", "value": "business" },
                 { "key": "target_id", "value": "{{businessId}}" },
+                { "key": "author_user_id", "value": "" },
                 { "key": "is_published", "value": "true" },
                 { "key": "limit", "value": "20" },
                 { "key": "offset", "value": "0" }
@@ -1013,6 +984,82 @@
         {
           "name": "Get Review Stats",
           "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/review/stats/business/{{businessId}}",
+              "host": ["{{host}}"],
+              "path": ["review", "stats", "business", "{{businessId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Create Favorite",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"market_id\": \"{{marketId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{host}}/favorites",
+              "host": ["{{host}}"],
+              "path": ["favorites"]
+            }
+          }
+        },
+        {
+          "name": "Delete Favorite",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/favorites/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["favorites", "{{marketId}}"]
+            }
+          }
+        },
+        {
+          "name": "List Favorites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/favorites?market_id={{marketId}}&user_id=&limit=20&offset=0",
+              "host": ["{{host}}"],
+              "path": ["favorites"],
+              "query": [
+                { "key": "market_id", "value": "{{marketId}}" },
+                { "key": "user_id", "value": "" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Favorites",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1022,9 +1069,31 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/review/stats/business/{{businessId}}",
+              "raw": "{{host}}/favorites/my-favorites?limit=20&offset=0",
               "host": ["{{host}}"],
-              "path": ["review", "stats", "business", "{{businessId}}"]
+              "path": ["favorites", "my-favorites"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Favorited",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{JWT}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/favorites/check/{{marketId}}",
+              "host": ["{{host}}"],
+              "path": ["favorites", "check", "{{marketId}}"]
             }
           }
         }

@@ -24,4 +24,3 @@ def get_dashboard_stats(
         message="Dashboard stats retrieved successfully",
         data=stats.model_dump(mode="json"),
     )
-

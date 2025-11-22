@@ -5,12 +5,10 @@ Revises: 78e6a52997c7
 Create Date: 2025-01-27 14:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-import sqlmodel
-
 
 # revision identifiers, used by Alembic.
 revision: str = "52bd2a8c1586"
@@ -25,13 +23,13 @@ def upgrade() -> None:
             'bank_transfer', 'credit_card', 'paypal', 'check', 'cash', 'other'
         )
     """)
-    
+
     op.execute("""
         CREATE TYPE paymentstatus AS ENUM (
             'pending', 'paid', 'failed', 'refunded'
         )
     """)
-    
+
     op.execute("""
         ALTER TABLE applications 
         ALTER COLUMN payment_method TYPE paymentmethod 
@@ -40,7 +38,7 @@ def upgrade() -> None:
             ELSE payment_method::paymentmethod
         END
     """)
-    
+
     op.execute("""
         ALTER TABLE applications 
         ALTER COLUMN payment_status TYPE paymentstatus 
@@ -56,4 +54,3 @@ def downgrade() -> None:
     op.execute("ALTER TABLE applications ALTER COLUMN payment_status TYPE VARCHAR(50)")
     op.execute("DROP TYPE paymentstatus")
     op.execute("DROP TYPE paymentmethod")
-

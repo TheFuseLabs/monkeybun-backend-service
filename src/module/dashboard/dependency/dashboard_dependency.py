@@ -10,4 +10,3 @@ def get_dashboard_service() -> DashboardService:
 
 
 DashboardServiceDep = Annotated[DashboardService, Depends(get_dashboard_service)]
-

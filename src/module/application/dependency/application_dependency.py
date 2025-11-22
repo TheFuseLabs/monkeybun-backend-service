@@ -15,12 +15,8 @@ from src.module.application.service.email_service import ApplicationEmailService
 
 
 def get_application_service(
-    email_client: Annotated[
-        ResendEmailClient, Depends(get_resend_email_client)
-    ],
-    supabase_client: Annotated[
-        SupabaseAdminClient, Depends(get_supabase_admin_client)
-    ],
+    email_client: Annotated[ResendEmailClient, Depends(get_resend_email_client)],
+    supabase_client: Annotated[SupabaseAdminClient, Depends(get_supabase_admin_client)],
 ) -> ApplicationService:
     email_service = ApplicationEmailService(email_client, supabase_client)
     return ApplicationService(email_service=email_service)
@@ -73,4 +69,3 @@ def verify_market_organizer(
 
 
 MarketOrganizerDep = Annotated[Market, Depends(verify_market_organizer)]
-

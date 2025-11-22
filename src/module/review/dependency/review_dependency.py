@@ -16,4 +16,3 @@ def get_review_service(
 
 
 ReviewServiceDep = Annotated[ReviewService, Depends(get_review_service)]
-

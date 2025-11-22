@@ -13,7 +13,7 @@ class AppSettings(BaseSettings):
     S3_REGION: str
     S3_ACCESS_KEY_ID: str
     S3_SECRET_ACCESS_KEY_ID: str
-    S3_ENPOINT: str
+    S3_ENDPOINT: str
     SUPABASE_DEV_USERNAME: str
     SUPABASE_DEV_PASSWORD: str
     GOOGLE_PLACES_API_KEY: str

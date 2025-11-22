@@ -39,7 +39,9 @@ class MarketCreateRequest(BaseModel):
             if self.cost_currency is None:
                 raise ValueError("cost_currency is required when is_free is False")
             if not self.payment_instructions:
-                raise ValueError("payment_instructions is required when is_free is False")
+                raise ValueError(
+                    "payment_instructions is required when is_free is False"
+                )
         return self
 
 
@@ -52,7 +54,9 @@ class MarketUpdateRequest(BaseModel):
     google_place_id: Optional[str] = None
     location_text: Optional[str] = None
     aesthetic: Optional[str] = None
-    market_size: Optional[Literal["Less than 10", "10-99", "100-499", "500-999", "1000+"]] = None
+    market_size: Optional[
+        Literal["Less than 10", "10-99", "100-499", "500-999", "1000+"]
+    ] = None
     target_vendors: Optional[str] = None
     optional_rules: Optional[str] = None
     contract_url: Optional[str] = None
@@ -76,8 +80,13 @@ class MarketUpdateRequest(BaseModel):
                 raise ValueError("cost_amount is required when is_free is False")
             if self.cost_currency is None:
                 raise ValueError("cost_currency is required when is_free is False")
-            if self.payment_instructions is None or self.payment_instructions.strip() == "":
-                raise ValueError("payment_instructions is required when is_free is False")
+            if (
+                self.payment_instructions is None
+                or self.payment_instructions.strip() == ""
+            ):
+                raise ValueError(
+                    "payment_instructions is required when is_free is False"
+                )
         return self
 
 

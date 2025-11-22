@@ -39,4 +39,3 @@ def verify_business_ownership(
 
 
 BusinessOwnershipDep = Annotated[Business, Depends(verify_business_ownership)]
-

@@ -42,14 +42,10 @@ class GooglePlacesClient:
 
         except httpx.RequestError as e:
             logger.error(f"Google Places API request error: {e}")
-            raise HTTPException(
-                status_code=500, detail="Google Places API unavailable"
-            )
+            raise HTTPException(status_code=500, detail="Google Places API unavailable")
         except Exception as e:
             logger.error(f"Unexpected error in get_place_details: {e}")
-            raise HTTPException(
-                status_code=500, detail="Failed to fetch place details"
-            )
+            raise HTTPException(status_code=500, detail="Failed to fetch place details")
 
     def search_places(self, query: str) -> Optional[Dict[str, Any]]:
         try:
@@ -77,14 +73,10 @@ class GooglePlacesClient:
 
         except httpx.RequestError as e:
             logger.error(f"Google Places API request error: {e}")
-            raise HTTPException(
-                status_code=500, detail="Google Places API unavailable"
-            )
+            raise HTTPException(status_code=500, detail="Google Places API unavailable")
         except Exception as e:
             logger.error(f"Unexpected error in search_places: {e}")
-            raise HTTPException(
-                status_code=500, detail="Failed to search places"
-            )
+            raise HTTPException(status_code=500, detail="Failed to search places")
 
     def validate_and_enrich_location(
         self, place_id: str, location_text: Optional[str] = None
@@ -106,14 +98,19 @@ class GooglePlacesClient:
             component_types = component.get("types", [])
             long_text = component.get("longText", "")
 
-            if "locality" in component_types or "administrative_area_level_2" in component_types:
+            if (
+                "locality" in component_types
+                or "administrative_area_level_2" in component_types
+            ):
                 if not city:
                     city = long_text
             if "country" in component_types:
                 country = long_text
 
         display_name = place_data.get("displayName", {})
-        display_text = display_name.get("text", "") if isinstance(display_name, dict) else ""
+        display_text = (
+            display_name.get("text", "") if isinstance(display_name, dict) else ""
+        )
 
         enriched_data = {
             "google_place_id": place_id,
@@ -126,4 +123,3 @@ class GooglePlacesClient:
         }
 
         return enriched_data
-

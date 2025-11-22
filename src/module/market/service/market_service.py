@@ -6,7 +6,12 @@ from sqlalchemy import and_, func, or_
 from sqlmodel import Session, select
 
 from src.common.utils.s3_url import convert_s3_url_to_public_url
-from src.database.postgres.models.db_models import Market, MarketAttendance, MarketImage, PendingImage
+from src.database.postgres.models.db_models import (
+    Market,
+    MarketAttendance,
+    MarketImage,
+    PendingImage,
+)
 from src.downstream.google.google_places_client import GooglePlacesClient
 from src.module.market.schema.market_schema import (
     MarketCreateRequest,
@@ -176,7 +181,10 @@ class MarketService:
         )
 
         attendance_counts_query = (
-            select(MarketAttendance.market_id, func.count(MarketAttendance.id).label("count"))
+            select(
+                MarketAttendance.market_id,
+                func.count(MarketAttendance.id).label("count"),
+            )
             .where(MarketAttendance.market_id.in_(market_ids))
             .group_by(MarketAttendance.market_id)
         )
@@ -189,14 +197,16 @@ class MarketService:
             .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
         )
         all_images = db.exec(first_images_query).all()
-        
+
         # Group all images by market_id
         images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
             if image.market_id not in images_by_market:
                 images_by_market[image.market_id] = []
-            images_by_market[image.market_id].append(convert_s3_url_to_public_url(image.image_url))
+            images_by_market[image.market_id].append(
+                convert_s3_url_to_public_url(image.image_url)
+            )
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
@@ -215,10 +225,10 @@ class MarketService:
                 if first_image
                 else logo_url
             )
-            
+
             # Get all images for this market
             market_images = images_by_market.get(market.id, [])
-            
+
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -354,9 +364,8 @@ class MarketService:
             db, "market", market_id
         )
 
-        attendance_count_query = (
-            select(func.count(MarketAttendance.id))
-            .where(MarketAttendance.market_id == market_id)
+        attendance_count_query = select(func.count(MarketAttendance.id)).where(
+            MarketAttendance.market_id == market_id
         )
         attendance_count = db.exec(attendance_count_query).one() or 0
 
@@ -404,7 +413,10 @@ class MarketService:
         )
 
         attendance_counts_query = (
-            select(MarketAttendance.market_id, func.count(MarketAttendance.id).label("count"))
+            select(
+                MarketAttendance.market_id,
+                func.count(MarketAttendance.id).label("count"),
+            )
             .where(MarketAttendance.market_id.in_(market_ids))
             .group_by(MarketAttendance.market_id)
         )
@@ -417,14 +429,16 @@ class MarketService:
             .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
         )
         all_images = db.exec(first_images_query).all()
-        
+
         # Group all images by market_id
         images_by_market = {}
         first_images_by_market = {}
         for image in all_images:
             if image.market_id not in images_by_market:
                 images_by_market[image.market_id] = []
-            images_by_market[image.market_id].append(convert_s3_url_to_public_url(image.image_url))
+            images_by_market[image.market_id].append(
+                convert_s3_url_to_public_url(image.image_url)
+            )
             if image.market_id not in first_images_by_market:
                 first_images_by_market[image.market_id] = image
 
@@ -443,10 +457,10 @@ class MarketService:
                 if first_image
                 else logo_url
             )
-            
+
             # Get all images for this market
             market_images = images_by_market.get(market.id, [])
-            
+
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,

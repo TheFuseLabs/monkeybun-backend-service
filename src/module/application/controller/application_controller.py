@@ -2,13 +2,11 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func
-from sqlmodel import select
 
 from src.common.logger import logger
 from src.common.utils.response import Response, StandardResponse, Status
 from src.database.dependency.db_dependency import DatabaseDep
-from src.database.postgres.models.db_models import Application, ApplicationStatus, Business, Market
+from src.database.postgres.models.db_models import ApplicationStatus, Business, Market
 from src.module.application.dependency.application_dependency import (
     ApplicationServiceDep,
     MarketOrganizerDep,
@@ -20,7 +18,6 @@ from src.module.application.schema.application_schema import (
     ApplicationPaymentUpdateRequest,
     ApplicationRejectRequest,
     ApplicationSearchFilters,
-    ApplicationStatus,
     ApplicationUpdateRequest,
 )
 from src.module.auth.dependency.auth_dependency import get_current_user
@@ -283,7 +280,9 @@ def update_payment(
     application_service: ApplicationServiceDep,
     db: DatabaseDep,
 ) -> StandardResponse:
-    logger.info(f"Updating payment for application {application_id} by user {current_user}")
+    logger.info(
+        f"Updating payment for application {application_id} by user {current_user}"
+    )
     application = application_service.update_payment(
         db, application_id, current_user, request
     )
@@ -309,4 +308,3 @@ def confirm_application(
         message="Application confirmed successfully",
         data=application.model_dump(mode="json"),
     )
-

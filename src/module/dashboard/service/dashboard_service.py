@@ -18,19 +18,17 @@ from src.module.dashboard.schema.dashboard_schema import (
 
 
 class DashboardService:
-    def get_dashboard_stats(
-        self, db: Session, user_id: UUID
-    ) -> DashboardStatsResponse:
+    def get_dashboard_stats(self, db: Session, user_id: UUID) -> DashboardStatsResponse:
         businesses_count = db.exec(
-            select(func.count()).select_from(Business).where(
-                Business.owner_user_id == user_id
-            )
+            select(func.count())
+            .select_from(Business)
+            .where(Business.owner_user_id == user_id)
         ).one()
 
         markets_count = db.exec(
-            select(func.count()).select_from(Market).where(
-                Market.organizer_user_id == user_id
-            )
+            select(func.count())
+            .select_from(Market)
+            .where(Market.organizer_user_id == user_id)
         ).one()
 
         user_businesses = db.exec(
@@ -62,15 +60,15 @@ class DashboardService:
                     applications_confirmed += 1
 
         attendances_count = db.exec(
-            select(func.count()).select_from(MarketAttendance).where(
-                MarketAttendance.user_id == user_id
-            )
+            select(func.count())
+            .select_from(MarketAttendance)
+            .where(MarketAttendance.user_id == user_id)
         ).one()
 
         reviews_written_count = db.exec(
-            select(func.count()).select_from(Review).where(
-                Review.author_user_id == user_id
-            )
+            select(func.count())
+            .select_from(Review)
+            .where(Review.author_user_id == user_id)
         ).one()
 
         return DashboardStatsResponse(
@@ -86,4 +84,3 @@ class DashboardService:
             attendances_count=attendances_count,
             reviews_written_count=reviews_written_count,
         )
-

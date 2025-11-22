@@ -43,9 +43,7 @@ class FavoriteService:
 
         return FavoriteResponse.model_validate(favorite.model_dump())
 
-    def delete_favorite(
-        self, db: Session, market_id: UUID, user_id: UUID
-    ) -> None:
+    def delete_favorite(self, db: Session, market_id: UUID, user_id: UUID) -> None:
         favorite = db.exec(
             select(MarketFavorite).where(
                 and_(
@@ -110,9 +108,7 @@ class FavoriteService:
         )
         return self.list_favorites(db, filters)
 
-    def is_favorited(
-        self, db: Session, market_id: UUID, user_id: UUID
-    ) -> bool:
+    def is_favorited(self, db: Session, market_id: UUID, user_id: UUID) -> bool:
         favorite = db.exec(
             select(MarketFavorite).where(
                 and_(

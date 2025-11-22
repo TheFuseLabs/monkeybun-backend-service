@@ -38,4 +38,3 @@ class AttendanceListResponse(BaseModel):
     total: int
     limit: int
     offset: int
-

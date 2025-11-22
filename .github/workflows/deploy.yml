@@ -71,7 +71,7 @@ jobs:
             --set-secrets=S3_REGION=mbbs_S3_REGION:latest \
             --set-secrets=S3_ACCESS_KEY_ID=mbbs_S3_ACCESS_KEY_ID:latest \
             --set-secrets=S3_SECRET_ACCESS_KEY_ID=mbbs_S3_SECRET_ACCESS_KEY_ID:latest \
-            --set-secrets=S3_ENPOINT=mbbs_S3_ENPOINT:latest \
+            --set-secrets=S3_ENDPOINT=mbbs_S3_ENDPOINT:latest \
             --set-secrets=SUPABASE_DEV_USERNAME=mbbs_SUPABASE_DEV_USERNAME:latest \
             --set-secrets=SUPABASE_DEV_PASSWORD=mbbs_SUPABASE_DEV_PASSWORD:latest \
             --set-secrets=GOOGLE_PLACES_API_KEY=mbbs_GOOGLE_PLACES_API_KEY:latest \
