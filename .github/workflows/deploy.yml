@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - deploy
   workflow_dispatch:
 
 env:
@@ -61,8 +60,6 @@ jobs:
             --memory 2Gi \
             --cpu 2 \
             --timeout 300 \
-            --max-instances 1 \
-            --min-instances 1 \
             --set-env-vars PYTHON_ENV=PROD \
             --set-secrets=POSTGRES_URL=mbbs_POSTGRES_URL:latest \
             --set-secrets=LOG_LEVEL=mbbs_LOG_LEVEL:latest \
