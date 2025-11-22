@@ -189,6 +189,8 @@ class MarketSearchResponse(BaseModel):
     application_deadline: Optional[datetime] = None
     images: Optional[list[str]] = None
     attendance_count: Optional[int] = None
+    is_favorited: Optional[bool] = None
+    is_attending: Optional[bool] = None
 
 
 class MarketListResponse(BaseModel):
@@ -196,3 +198,4 @@ class MarketListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    applied_market_ids: Optional[list[UUID]] = None

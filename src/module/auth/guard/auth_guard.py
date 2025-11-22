@@ -8,6 +8,7 @@ from jwt import PyJWKClient
 from src.common.config import settings
 
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 _jwks_clients: Dict[str, PyJWKClient] = {}
 
 

@@ -552,29 +552,6 @@
           }
         },
         {
-          "name": "Get Market Applications",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                { "key": "token", "value": "{{JWT}}", "type": "string" }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{host}}/application/market/{{marketId}}?status=applied&limit=20&offset=0",
-              "host": ["{{host}}"],
-              "path": ["application", "market", "{{marketId}}"],
-              "query": [
-                { "key": "status", "value": "applied" },
-                { "key": "limit", "value": "20" },
-                { "key": "offset", "value": "0" }
-              ]
-            }
-          }
-        },
-        {
           "name": "Get My Applications",
           "request": {
             "auth": {

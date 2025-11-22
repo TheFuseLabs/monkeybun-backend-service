@@ -11,24 +11,34 @@ from src.database.postgres.models.db_models import (
     Business,
     Market,
 )
+from src.common.utils.s3_url import convert_s3_url_to_public_url
+from src.database.postgres.models.db_models import BusinessImage, MarketImage
 from src.module.application.schema.application_schema import (
     ApplicationAcceptRequest,
     ApplicationConfirmRequest,
     ApplicationCreateRequest,
     ApplicationListResponse,
+    ApplicationListWithDetailsResponse,
     ApplicationPaymentUpdateRequest,
     ApplicationRejectRequest,
     ApplicationResponse,
     ApplicationSearchFilters,
     ApplicationSearchResponse,
     ApplicationUpdateRequest,
+    ApplicationWithDetailsResponse,
 )
+from src.module.review.service.review_service import ReviewService
 from src.module.application.service.email_service import ApplicationEmailService
 
 
 class ApplicationService:
-    def __init__(self, email_service: ApplicationEmailService | None = None):
+    def __init__(
+        self,
+        email_service: ApplicationEmailService | None = None,
+        review_service: ReviewService | None = None,
+    ):
         self.email_service = email_service
+        self.review_service = review_service
 
     def create_application(
         self, db: Session, user_id: UUID, request: ApplicationCreateRequest
@@ -397,6 +407,241 @@ class ApplicationService:
             )
 
         return ApplicationListResponse(
+            applications=application_responses,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    def get_my_applications_with_details(
+        self,
+        db: Session,
+        user_id: UUID,
+        status: ApplicationStatus | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> ApplicationListWithDetailsResponse:
+        user_businesses = db.exec(
+            select(Business).where(Business.owner_user_id == user_id)
+        ).all()
+
+        if not user_businesses:
+            return ApplicationListWithDetailsResponse(
+                applications=[],
+                total=0,
+                limit=limit,
+                offset=offset,
+            )
+
+        business_ids = [business.id for business in user_businesses]
+
+        conditions = [Application.business_id.in_(business_ids)]
+
+        if status:
+            conditions.append(Application.status == status)
+
+        query = select(Application)
+        if conditions:
+            query = query.where(and_(*conditions))
+
+        total_query = select(func.count()).select_from(Application)
+        if conditions:
+            total_query = total_query.where(and_(*conditions))
+
+        total = db.exec(total_query).one()
+
+        query = query.order_by(Application.created_at.desc())
+        query = query.offset(offset).limit(limit)
+
+        applications = db.exec(query).all()
+
+        market_ids = [app.market_id for app in applications]
+        markets = {}
+        if market_ids and self.review_service:
+            review_stats = self.review_service.get_batch_review_stats(
+                db, "market", market_ids
+            )
+            markets_query = select(Market).where(Market.id.in_(market_ids))
+            markets_list = db.exec(markets_query).all()
+            images_query = (
+                select(MarketImage)
+                .where(MarketImage.market_id.in_(market_ids))
+                .order_by(
+                    MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc()
+                )
+            )
+            all_images = db.exec(images_query).all()
+            images_by_market = {}
+            first_images_by_market = {}
+            for image in all_images:
+                if image.market_id not in images_by_market:
+                    images_by_market[image.market_id] = []
+                images_by_market[image.market_id].append(
+                    convert_s3_url_to_public_url(image.image_url)
+                )
+                if image.market_id not in first_images_by_market:
+                    first_images_by_market[image.market_id] = image
+
+            for market in markets_list:
+                review_count, average_rating = review_stats.get(market.id, (0, None))
+                market_dict = market.model_dump()
+                if market_dict.get("logo_url"):
+                    market_dict["logo_url"] = convert_s3_url_to_public_url(
+                        market_dict["logo_url"]
+                    )
+                first_image = first_images_by_market.get(market.id)
+                market_dict["image_url"] = (
+                    convert_s3_url_to_public_url(first_image.image_url)
+                    if first_image
+                    else market_dict.get("logo_url")
+                )
+                market_dict["images"] = images_by_market.get(market.id, [])
+                market_dict["review_count"] = review_count
+                market_dict["average_rating"] = average_rating
+                markets[market.id] = market_dict
+
+        application_responses = []
+        for application in applications:
+            application_responses.append(
+                ApplicationWithDetailsResponse(
+                    id=application.id,
+                    market_id=application.market_id,
+                    business_id=application.business_id,
+                    status=application.status,
+                    applied_at=application.applied_at,
+                    rejection_reason=application.rejection_reason,
+                    created_at=application.created_at,
+                    market=markets.get(application.market_id),
+                )
+            )
+
+        return ApplicationListWithDetailsResponse(
+            applications=application_responses,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    def get_my_markets_applications_with_details(
+        self, db: Session, user_id: UUID, limit: int = 100, offset: int = 0
+    ) -> ApplicationListWithDetailsResponse:
+        user_markets = db.exec(
+            select(Market).where(Market.organizer_user_id == user_id)
+        ).all()
+
+        if not user_markets:
+            return ApplicationListWithDetailsResponse(
+                applications=[],
+                total=0,
+                limit=limit,
+                offset=offset,
+            )
+
+        market_ids = [market.id for market in user_markets]
+
+        query = select(Application).where(Application.market_id.in_(market_ids))
+
+        total_query = select(func.count()).select_from(Application)
+        total_query = total_query.where(Application.market_id.in_(market_ids))
+        total = db.exec(total_query).one()
+
+        query = query.order_by(Application.created_at.desc())
+        query = query.offset(offset).limit(limit)
+
+        applications = db.exec(query).all()
+
+        business_ids = [app.business_id for app in applications]
+        businesses = {}
+        if business_ids:
+            businesses_query = select(Business).where(Business.id.in_(business_ids))
+            businesses_list = db.exec(businesses_query).all()
+            images_query = (
+                select(BusinessImage)
+                .where(BusinessImage.business_id.in_(business_ids))
+                .order_by(
+                    BusinessImage.sort_order.asc().nulls_last(),
+                    BusinessImage.id.asc(),
+                )
+            )
+            all_images = db.exec(images_query).all()
+            images_by_business = {}
+            for image in all_images:
+                if image.business_id not in images_by_business:
+                    images_by_business[image.business_id] = []
+                images_by_business[image.business_id].append(
+                    convert_s3_url_to_public_url(image.image_url)
+                )
+
+            for business in businesses_list:
+                business_dict = business.model_dump()
+                if business_dict.get("logo_url"):
+                    business_dict["logo_url"] = convert_s3_url_to_public_url(
+                        business_dict["logo_url"]
+                    )
+                business_dict["images"] = images_by_business.get(business.id, [])
+                businesses[business.id] = business_dict
+
+        markets = {}
+        if market_ids and self.review_service:
+            review_stats = self.review_service.get_batch_review_stats(
+                db, "market", market_ids
+            )
+            markets_query = select(Market).where(Market.id.in_(market_ids))
+            markets_list = db.exec(markets_query).all()
+            images_query = (
+                select(MarketImage)
+                .where(MarketImage.market_id.in_(market_ids))
+                .order_by(
+                    MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc()
+                )
+            )
+            all_images = db.exec(images_query).all()
+            images_by_market = {}
+            first_images_by_market = {}
+            for image in all_images:
+                if image.market_id not in images_by_market:
+                    images_by_market[image.market_id] = []
+                images_by_market[image.market_id].append(
+                    convert_s3_url_to_public_url(image.image_url)
+                )
+                if image.market_id not in first_images_by_market:
+                    first_images_by_market[image.market_id] = image
+
+            for market in markets_list:
+                review_count, average_rating = review_stats.get(market.id, (0, None))
+                market_dict = market.model_dump()
+                if market_dict.get("logo_url"):
+                    market_dict["logo_url"] = convert_s3_url_to_public_url(
+                        market_dict["logo_url"]
+                    )
+                first_image = first_images_by_market.get(market.id)
+                market_dict["image_url"] = (
+                    convert_s3_url_to_public_url(first_image.image_url)
+                    if first_image
+                    else market_dict.get("logo_url")
+                )
+                market_dict["images"] = images_by_market.get(market.id, [])
+                market_dict["review_count"] = review_count
+                market_dict["average_rating"] = average_rating
+                markets[market.id] = market_dict
+
+        application_responses = []
+        for application in applications:
+            application_responses.append(
+                ApplicationWithDetailsResponse(
+                    id=application.id,
+                    market_id=application.market_id,
+                    business_id=application.business_id,
+                    status=application.status,
+                    applied_at=application.applied_at,
+                    rejection_reason=application.rejection_reason,
+                    created_at=application.created_at,
+                    market=markets.get(application.market_id),
+                    business=businesses.get(application.business_id),
+                )
+            )
+
+        return ApplicationListWithDetailsResponse(
             applications=application_responses,
             total=total,
             limit=limit,

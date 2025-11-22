@@ -6,16 +6,23 @@ from sqlalchemy import and_, func
 from sqlmodel import Session, select
 
 from src.database.postgres.models.db_models import Market, MarketAttendance
+from src.common.utils.s3_url import convert_s3_url_to_public_url
+from src.database.postgres.models.db_models import MarketImage
 from src.module.attendance.schema.attendance_schema import (
     AttendanceCreateRequest,
     AttendanceListFilters,
     AttendanceListResponse,
+    AttendanceListWithMarketsResponse,
     AttendanceResponse,
     AttendanceUpdateRequest,
+    AttendanceWithMarketResponse,
 )
+from src.module.review.service.review_service import ReviewService
 
 
 class AttendanceService:
+    def __init__(self, review_service: ReviewService):
+        self.review_service = review_service
     def create_attendance(
         self, db: Session, user_id: UUID, request: AttendanceCreateRequest
     ) -> AttendanceResponse:
@@ -158,3 +165,89 @@ class AttendanceService:
             offset=offset,
         )
         return self.list_attendances(db, filters)
+
+    def get_my_attendances_with_markets(
+        self, db: Session, user_id: UUID, limit: int = 20, offset: int = 0
+    ) -> AttendanceListWithMarketsResponse:
+        filters = AttendanceListFilters(
+            user_id=user_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        query = select(MarketAttendance)
+        conditions = [MarketAttendance.user_id == user_id]
+        query = query.where(and_(*conditions))
+
+        total_query = select(func.count()).select_from(MarketAttendance)
+        total_query = total_query.where(and_(*conditions))
+        total = db.exec(total_query).one()
+
+        query = query.order_by(MarketAttendance.created_at.desc())
+        query = query.offset(filters.offset).limit(filters.limit)
+        attendances = db.exec(query).all()
+
+        market_ids = [attendance.market_id for attendance in attendances]
+        markets = {}
+        if market_ids:
+            review_stats = self.review_service.get_batch_review_stats(
+                db, "market", market_ids
+            )
+            markets_query = select(Market).where(Market.id.in_(market_ids))
+            markets_list = db.exec(markets_query).all()
+            images_query = (
+                select(MarketImage)
+                .where(MarketImage.market_id.in_(market_ids))
+                .order_by(MarketImage.sort_order.asc().nulls_last(), MarketImage.id.asc())
+            )
+            all_images = db.exec(images_query).all()
+            images_by_market = {}
+            first_images_by_market = {}
+            for image in all_images:
+                if image.market_id not in images_by_market:
+                    images_by_market[image.market_id] = []
+                images_by_market[image.market_id].append(
+                    convert_s3_url_to_public_url(image.image_url)
+                )
+                if image.market_id not in first_images_by_market:
+                    first_images_by_market[image.market_id] = image
+
+            for market in markets_list:
+                review_count, average_rating = review_stats.get(market.id, (0, None))
+                market_dict = market.model_dump()
+                if market_dict.get("logo_url"):
+                    market_dict["logo_url"] = convert_s3_url_to_public_url(
+                        market_dict["logo_url"]
+                    )
+                first_image = first_images_by_market.get(market.id)
+                market_dict["image_url"] = (
+                    convert_s3_url_to_public_url(first_image.image_url)
+                    if first_image
+                    else market_dict.get("logo_url")
+                )
+                market_dict["images"] = images_by_market.get(market.id, [])
+                market_dict["review_count"] = review_count
+                market_dict["average_rating"] = average_rating
+                markets[market.id] = market_dict
+
+        attendance_responses = []
+        for attendance in attendances:
+            market_data = markets.get(attendance.market_id)
+            attendance_responses.append(
+                AttendanceWithMarketResponse(
+                    id=attendance.id,
+                    market_id=attendance.market_id,
+                    user_id=attendance.user_id,
+                    status=attendance.status,
+                    calendar_event_id=attendance.calendar_event_id,
+                    created_at=attendance.created_at,
+                    market=market_data,
+                )
+            )
+
+        return AttendanceListWithMarketsResponse(
+            attendances=attendance_responses,
+            total=total,
+            limit=filters.limit,
+            offset=filters.offset,
+        )

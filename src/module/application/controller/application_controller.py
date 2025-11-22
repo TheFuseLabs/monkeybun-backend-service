@@ -9,7 +9,6 @@ from src.database.dependency.db_dependency import DatabaseDep
 from src.database.postgres.models.db_models import ApplicationStatus, Business, Market
 from src.module.application.dependency.application_dependency import (
     ApplicationServiceDep,
-    MarketOrganizerDep,
 )
 from src.module.application.schema.application_schema import (
     ApplicationAcceptRequest,
@@ -51,9 +50,10 @@ def get_my_applications(
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
+    with_details: Annotated[bool, Query()] = False,
 ) -> StandardResponse:
     logger.info(
-        f"Retrieving applications for user {current_user} - status: {status}, limit: {limit}, offset: {offset}"
+        f"Retrieving applications for user {current_user} - status: {status}, limit: {limit}, offset: {offset}, with_details: {with_details}"
     )
 
     status_enum = None
@@ -65,8 +65,33 @@ def get_my_applications(
                 status_code=400, detail=f"Invalid status value: {status}"
             )
 
-    result = application_service.get_my_applications(
-        db, current_user, status_enum, limit, offset
+    if with_details:
+        result = application_service.get_my_applications_with_details(
+            db, current_user, status_enum, limit, offset
+        )
+    else:
+        result = application_service.get_my_applications(
+            db, current_user, status_enum, limit, offset
+        )
+    return Response.success(
+        message="Applications retrieved successfully",
+        data=result.model_dump(mode="json"),
+    )
+
+
+@router.get("/my-markets-applications")
+def get_my_markets_applications(
+    application_service: ApplicationServiceDep,
+    db: DatabaseDep,
+    current_user: Annotated[UUID, Depends(get_current_user)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> StandardResponse:
+    logger.info(
+        f"Retrieving applications for user {current_user}'s markets - limit: {limit}, offset: {offset}"
+    )
+    result = application_service.get_my_markets_applications_with_details(
+        db, current_user, limit, offset
     )
     return Response.success(
         message="Applications retrieved successfully",
@@ -158,42 +183,6 @@ def search_applications(
     filters = ApplicationSearchFilters(
         market_id=market_id,
         business_id=business_id,
-        status=status_enum,
-        limit=limit,
-        offset=offset,
-    )
-
-    result = application_service.search_applications(db, filters)
-    return Response.success(
-        message="Applications retrieved successfully",
-        data=result.model_dump(mode="json"),
-    )
-
-
-@router.get("/market/{market_id}")
-def get_market_applications(
-    market: MarketOrganizerDep,
-    application_service: ApplicationServiceDep,
-    db: DatabaseDep,
-    status: Annotated[str | None, Query()] = None,
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
-) -> StandardResponse:
-    logger.info(
-        f"Retrieving applications for market {market.id} - status: {status}, limit: {limit}, offset: {offset}"
-    )
-
-    status_enum = None
-    if status:
-        try:
-            status_enum = ApplicationStatus(status)
-        except ValueError:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid status value: {status}"
-            )
-
-    filters = ApplicationSearchFilters(
-        market_id=market.id,
         status=status_enum,
         limit=limit,
         offset=offset,

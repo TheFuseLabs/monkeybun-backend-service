@@ -9,3 +9,8 @@ alwaysApply: true
 - Use uv for package management.
 - Do not tightly couple dependencies in classes. Always use dependency injection when you can.
 - If a module has dependencies, they should be in the dependency file for that module.
+- Do not write comments or docstrings for functions and classes.
+- Do not write comments unless absolutely necessary to explain something that is not obvious.
+- Do not create markdown files to explain your changes unless I ask you to do so.
+- Do not create **init**.py files.
+- Keep the postman collection up to date with the code.

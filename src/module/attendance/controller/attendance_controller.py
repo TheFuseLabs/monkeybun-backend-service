@@ -35,6 +35,26 @@ def create_attendance(
     )
 
 
+@router.get("/my-attendances")
+def get_my_attendances(
+    attendance_service: AttendanceServiceDep,
+    db: DatabaseDep,
+    current_user: Annotated[UUID, Depends(get_current_user)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> StandardResponse:
+    logger.info(
+        f"Retrieving attendances for user {current_user} - limit: {limit}, offset: {offset}"
+    )
+    result = attendance_service.get_my_attendances_with_markets(
+        db, current_user, limit, offset
+    )
+    return Response.success(
+        message="Attendances retrieved successfully",
+        data=result.model_dump(mode="json"),
+    )
+
+
 @router.get("/{attendance_id}")
 def get_attendance(
     attendance_id: UUID,
@@ -105,21 +125,3 @@ def delete_attendance(
     logger.info(f"Deleting attendance {attendance_id} by user {current_user}")
     attendance_service.delete_attendance(db, attendance_id, current_user)
     return Response.no_content()
-
-
-@router.get("/my-attendances")
-def get_my_attendances(
-    attendance_service: AttendanceServiceDep,
-    db: DatabaseDep,
-    current_user: Annotated[UUID, Depends(get_current_user)],
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
-) -> StandardResponse:
-    logger.info(
-        f"Retrieving attendances for user {current_user} - limit: {limit}, offset: {offset}"
-    )
-    result = attendance_service.get_my_attendances(db, current_user, limit, offset)
-    return Response.success(
-        message="Attendances retrieved successfully",
-        data=result.model_dump(mode="json"),
-    )

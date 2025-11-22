@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -65,11 +66,14 @@ class BusinessService:
         return self._get_business_with_images(db, business_id)
 
     def search_businesses(
-        self, db: Session, filters: BusinessSearchFilters
+        self, db: Session, filters: BusinessSearchFilters, user_id: Optional[UUID] = None
     ) -> BusinessListResponse:
         query = select(Business)
 
         conditions = []
+
+        if user_id is not None:
+            conditions.append(Business.owner_user_id != user_id)
 
         if filters.category:
             conditions.append(Business.category.ilike(f"%{filters.category}%"))

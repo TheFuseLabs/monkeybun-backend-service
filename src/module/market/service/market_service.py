@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -7,8 +8,11 @@ from sqlmodel import Session, select
 
 from src.common.utils.s3_url import convert_s3_url_to_public_url
 from src.database.postgres.models.db_models import (
+    Application,
+    Business,
     Market,
     MarketAttendance,
+    MarketFavorite,
     MarketImage,
     PendingImage,
 )
@@ -82,11 +86,14 @@ class MarketService:
         return self._get_market_with_images(db, market_id)
 
     def search_markets(
-        self, db: Session, filters: MarketSearchFilters
+        self, db: Session, filters: MarketSearchFilters, user_id: Optional[UUID] = None
     ) -> MarketListResponse:
         query = select(Market)
 
         conditions = []
+
+        if user_id is not None:
+            conditions.append(Market.organizer_user_id != user_id)
 
         if filters.city:
             conditions.append(Market.city.ilike(f"%{filters.city}%"))
@@ -191,6 +198,27 @@ class MarketService:
         attendance_counts_result = db.exec(attendance_counts_query).all()
         attendance_counts = {row[0]: row[1] for row in attendance_counts_result}
 
+        favorited_market_ids = set()
+        attending_market_ids = set()
+        if user_id is not None and market_ids:
+            favorites_query = select(MarketFavorite.market_id).where(
+                and_(
+                    MarketFavorite.user_id == user_id,
+                    MarketFavorite.market_id.in_(market_ids),
+                )
+            )
+            favorited_results = db.exec(favorites_query).all()
+            favorited_market_ids = {row[0] for row in favorited_results}
+
+            attendances_query = select(MarketAttendance.market_id).where(
+                and_(
+                    MarketAttendance.user_id == user_id,
+                    MarketAttendance.market_id.in_(market_ids),
+                )
+            )
+            attending_results = db.exec(attendances_query).all()
+            attending_market_ids = {row[0] for row in attending_results}
+
         first_images_query = (
             select(MarketImage)
             .where(MarketImage.market_id.in_(market_ids))
@@ -229,6 +257,9 @@ class MarketService:
             # Get all images for this market
             market_images = images_by_market.get(market.id, [])
 
+            is_favorited = market.id in favorited_market_ids if user_id is not None else None
+            is_attending = market.id in attending_market_ids if user_id is not None else None
+
             market_responses.append(
                 MarketSearchResponse(
                     id=market.id,
@@ -254,14 +285,31 @@ class MarketService:
                     application_deadline=market.application_deadline,
                     images=market_images if market_images else None,
                     attendance_count=attendance_count,
+                    is_favorited=is_favorited,
+                    is_attending=is_attending,
                 )
             )
+
+        applied_market_ids = None
+        if user_id is not None:
+            user_businesses = db.exec(
+                select(Business).where(Business.owner_user_id == user_id)
+            ).all()
+            if user_businesses:
+                business_ids = [business.id for business in user_businesses]
+                applied_applications = db.exec(
+                    select(Application.market_id)
+                    .where(Application.business_id.in_(business_ids))
+                    .distinct()
+                ).all()
+                applied_market_ids = [app[0] for app in applied_applications]
 
         return MarketListResponse(
             markets=market_responses,
             total=total,
             limit=filters.limit,
             offset=filters.offset,
+            applied_market_ids=applied_market_ids,
         )
 
     def update_market(
