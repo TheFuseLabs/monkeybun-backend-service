@@ -244,6 +244,34 @@ class MarketAttendance(SQLModel, table=True):
     )
 
 
+class MarketFavorite(SQLModel, table=True):
+    __tablename__ = "market_favorites"
+    __table_args__ = (
+        UniqueConstraint(
+            "market_id", "user_id", name="market_favorites_market_id_user_id_key"
+        ),
+    )
+
+    id: UUID = Field(
+        default_factory=uuid4,
+        sa_column=Column(
+            PGUUID(as_uuid=True),
+            primary_key=True,
+            server_default=func.gen_random_uuid(),
+        ),
+    )
+    market_id: UUID = Field(
+        sa_column=Column(
+            PGUUID(as_uuid=True), ForeignKey("markets.id", ondelete="CASCADE")
+        )
+    )
+    user_id: UUID = Field(sa_column=Column(PGUUID(as_uuid=True)))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(server_default=func.now()),
+    )
+
+
 class Review(SQLModel, table=True):
     __tablename__ = "reviews"
     __table_args__ = (

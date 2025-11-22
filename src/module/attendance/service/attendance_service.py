@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -21,6 +22,12 @@ class AttendanceService:
         market = db.get(Market, request.market_id)
         if not market:
             raise HTTPException(status_code=404, detail="Market not found")
+
+        if market.end_date and market.end_date < date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot attend a market that has already finished",
+            )
 
         existing_attendance = db.exec(
             select(MarketAttendance).where(

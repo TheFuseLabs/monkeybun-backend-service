@@ -6,7 +6,7 @@ from sqlalchemy import and_, func, or_
 from sqlmodel import Session, select
 
 from src.common.utils.s3_url import convert_s3_url_to_public_url
-from src.database.postgres.models.db_models import Market, MarketImage, PendingImage
+from src.database.postgres.models.db_models import Market, MarketAttendance, MarketImage, PendingImage
 from src.downstream.google.google_places_client import GooglePlacesClient
 from src.module.market.schema.market_schema import (
     MarketCreateRequest,
@@ -175,6 +175,14 @@ class MarketService:
             db, "market", market_ids
         )
 
+        attendance_counts_query = (
+            select(MarketAttendance.market_id, func.count(MarketAttendance.id).label("count"))
+            .where(MarketAttendance.market_id.in_(market_ids))
+            .group_by(MarketAttendance.market_id)
+        )
+        attendance_counts_result = db.exec(attendance_counts_query).all()
+        attendance_counts = {row[0]: row[1] for row in attendance_counts_result}
+
         first_images_query = (
             select(MarketImage)
             .where(MarketImage.market_id.in_(market_ids))
@@ -195,6 +203,7 @@ class MarketService:
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            attendance_count = attendance_counts.get(market.id, 0)
             logo_url = (
                 convert_s3_url_to_public_url(market.logo_url)
                 if market.logo_url
@@ -234,6 +243,7 @@ class MarketService:
                     cost_currency=market.cost_currency,
                     application_deadline=market.application_deadline,
                     images=market_images if market_images else None,
+                    attendance_count=attendance_count,
                 )
             )
 
@@ -344,6 +354,12 @@ class MarketService:
             db, "market", market_id
         )
 
+        attendance_count_query = (
+            select(func.count(MarketAttendance.id))
+            .where(MarketAttendance.market_id == market_id)
+        )
+        attendance_count = db.exec(attendance_count_query).one() or 0
+
         market_dict = market.model_dump()
         if market_dict.get("logo_url"):
             market_dict["logo_url"] = convert_s3_url_to_public_url(
@@ -361,6 +377,7 @@ class MarketService:
         ]
         market_dict["review_count"] = review_count
         market_dict["average_rating"] = average_rating
+        market_dict["attendance_count"] = attendance_count
 
         return MarketResponse.model_validate(market_dict)
 
@@ -386,6 +403,14 @@ class MarketService:
             db, "market", market_ids
         )
 
+        attendance_counts_query = (
+            select(MarketAttendance.market_id, func.count(MarketAttendance.id).label("count"))
+            .where(MarketAttendance.market_id.in_(market_ids))
+            .group_by(MarketAttendance.market_id)
+        )
+        attendance_counts_result = db.exec(attendance_counts_query).all()
+        attendance_counts = {row[0]: row[1] for row in attendance_counts_result}
+
         first_images_query = (
             select(MarketImage)
             .where(MarketImage.market_id.in_(market_ids))
@@ -406,6 +431,7 @@ class MarketService:
         market_responses = []
         for market in markets:
             review_count, average_rating = review_stats.get(market.id, (0, None))
+            attendance_count = attendance_counts.get(market.id, 0)
             logo_url = (
                 convert_s3_url_to_public_url(market.logo_url)
                 if market.logo_url
@@ -445,6 +471,7 @@ class MarketService:
                     cost_currency=market.cost_currency,
                     application_deadline=market.application_deadline,
                     images=market_images if market_images else None,
+                    attendance_count=attendance_count,
                 )
             )
 

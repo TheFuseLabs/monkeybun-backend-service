@@ -15,6 +15,9 @@ from src.module.business.controller.business_controller import router as busines
 from src.module.dashboard.controller.dashboard_controller import (
     router as dashboard_router,
 )
+from src.module.favorite.controller.favorite_controller import (
+    router as favorite_router,
+)
 from src.module.market.controller.market_controller import router as market_router
 from src.module.review.controller.review_controller import router as review_router
 from src.module.upload.controller.upload_controller import router as upload_router
@@ -25,6 +28,7 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(application_router)
     app.include_router(attendance_router)
     app.include_router(business_router)
+    app.include_router(favorite_router)
     app.include_router(market_router)
     app.include_router(review_router)
     app.include_router(upload_router)
