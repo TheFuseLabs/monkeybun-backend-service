@@ -340,13 +340,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/market?city=New York&country=USA&is_published=true&start_date_from=2024-06-01&start_date_to=2024-12-31&end_date_from=2024-06-01&end_date_to=2024-12-31&latitude=40.7128&longitude=-74.0060&radius_km=50&aesthetic=Boho-chic&market_size=100-499&is_free=false&limit=20&offset=0",
+              "raw": "{{host}}/market?city=New York&country=USA&start_date_from=2024-06-01&start_date_to=2024-12-31&end_date_from=2024-06-01&end_date_to=2024-12-31&latitude=40.7128&longitude=-74.0060&radius_km=50&aesthetic=Boho-chic&market_size=100-499&is_free=false&limit=20&offset=0",
               "host": ["{{host}}"],
               "path": ["market"],
               "query": [
                 { "key": "city", "value": "New York" },
                 { "key": "country", "value": "USA" },
-                { "key": "is_published", "value": "true" },
                 { "key": "start_date_from", "value": "2024-06-01" },
                 { "key": "start_date_to", "value": "2024-12-31" },
                 { "key": "end_date_from", "value": "2024-06-01" },
@@ -398,7 +397,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"market_name\": \"Updated Market Name\",\n    \"description\": \"Updated description\",\n    \"is_published\": true\n}",
+              "raw": "{\n    \"market_name\": \"Updated Market Name\",\n    \"description\": \"Updated description\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {

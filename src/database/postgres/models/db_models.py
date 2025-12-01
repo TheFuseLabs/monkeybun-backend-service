@@ -118,7 +118,6 @@ class Market(SQLModel, table=True):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     application_deadline: Optional[datetime] = None
-    is_published: bool = Field(default=True)
     email_package_url: Optional[str] = None
     payment_instructions: Optional[str] = None
     application_form: Optional[Dict[str, Any]] = Field(

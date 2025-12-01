@@ -44,7 +44,6 @@ def search_markets(
     current_user: Annotated[UUID | None, Depends(get_optional_user)] = None,
     city: Annotated[str | None, Query()] = None,
     country: Annotated[str | None, Query()] = None,
-    is_published: Annotated[bool | None, Query()] = None,
     start_date_from: Annotated[str | None, Query()] = None,
     start_date_to: Annotated[str | None, Query()] = None,
     end_date_from: Annotated[str | None, Query()] = None,
@@ -59,12 +58,11 @@ def search_markets(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> StandardResponse:
     logger.info(
-        f"Searching markets - city: {city}, country: {country}, published: {is_published}, limit: {limit}, offset: {offset}"
+        f"Searching markets - city: {city}, country: {country}, limit: {limit}, offset: {offset}"
     )
     filters = MarketSearchFilters(
         city=city,
         country=country,
-        is_published=is_published,
         start_date_from=date_type.fromisoformat(start_date_from)
         if start_date_from
         else None,

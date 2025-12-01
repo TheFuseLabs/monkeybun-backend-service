@@ -95,9 +95,6 @@ class MarketService:
         if filters.country:
             filter_conditions.append(Market.country.ilike(f"%{filters.country}%"))
 
-        if filters.is_published is not None:
-            filter_conditions.append(Market.is_published == filters.is_published)
-
         if filters.start_date_from:
             filter_conditions.append(
                 or_(
@@ -178,41 +175,25 @@ class MarketService:
             )
 
         query = select(Market)
-        where_clause = None
+        where_clause_parts = []
 
-        has_filters = len(filter_conditions) > 0
+        if filter_conditions:
+            if len(filter_conditions) == 1:
+                where_clause_parts.append(filter_conditions[0])
+            else:
+                where_clause_parts.append(and_(*filter_conditions))
 
-        if base_condition is not None and has_filters and favorite_exists is not None:
-            filter_condition = (
-                filter_conditions[0]
-                if len(filter_conditions) == 1
-                else and_(*filter_conditions)
-            )
-            where_clause = or_(and_(base_condition, filter_condition), favorite_exists)
-        elif base_condition is not None and has_filters:
-            where_clause = and_(base_condition, *filter_conditions)
-        elif base_condition is not None and favorite_exists is not None:
-            where_clause = or_(base_condition, favorite_exists)
-        elif base_condition is not None:
-            where_clause = base_condition
-        elif has_filters and favorite_exists is not None:
-            filter_condition = (
-                filter_conditions[0]
-                if len(filter_conditions) == 1
-                else and_(*filter_conditions)
-            )
-            where_clause = or_(filter_condition, favorite_exists)
-        elif has_filters:
-            where_clause = (
-                filter_conditions[0]
-                if len(filter_conditions) == 1
-                else and_(*filter_conditions)
-            )
-        elif favorite_exists is not None:
-            where_clause = favorite_exists
+        if base_condition is not None:
+            where_clause_parts.append(base_condition)
 
-        if where_clause is not None:
+        if where_clause_parts:
+            if len(where_clause_parts) == 1:
+                where_clause = where_clause_parts[0]
+            else:
+                where_clause = and_(*where_clause_parts)
             query = query.where(where_clause)
+        else:
+            where_clause = None
 
         total_query = select(func.count(Market.id))
         if where_clause is not None:
