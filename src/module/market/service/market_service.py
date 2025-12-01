@@ -308,7 +308,12 @@ class MarketService:
                     .where(Application.business_id.in_(business_ids))
                     .distinct()
                 ).all()
-                applied_market_ids = [app[0] for app in applied_applications]
+                applied_market_ids = [
+                    app[0]
+                    if hasattr(app, "__getitem__") and not isinstance(app, UUID)
+                    else app
+                    for app in applied_applications
+                ]
 
         return MarketListResponse(
             markets=market_responses,
