@@ -7,9 +7,6 @@ from src.common.logger import logger
 from src.module.application.controller.application_controller import (
     router as application_router,
 )
-from src.module.attendance.controller.attendance_controller import (
-    router as attendance_router,
-)
 from src.module.auth.controller.auth_controller import router as auth_router
 from src.module.business.controller.business_controller import router as business_router
 from src.module.dashboard.controller.dashboard_controller import (
@@ -26,7 +23,6 @@ from src.module.upload.controller.upload_controller import router as upload_rout
 def include_routers(app: FastAPI) -> None:
     app.include_router(auth_router)
     app.include_router(application_router)
-    app.include_router(attendance_router)
     app.include_router(business_router)
     app.include_router(favorite_router)
     app.include_router(market_router)

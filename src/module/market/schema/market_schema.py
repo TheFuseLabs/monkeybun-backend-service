@@ -144,7 +144,6 @@ class MarketResponse(BaseModel):
     images: Optional[list[MarketImageResponse]] = None
     review_count: Optional[int] = None
     average_rating: Optional[float] = None
-    attendance_count: Optional[int] = None
 
 
 class MarketSearchFilters(BaseModel):
@@ -188,9 +187,7 @@ class MarketSearchResponse(BaseModel):
     cost_currency: Optional[str] = None
     application_deadline: Optional[datetime] = None
     images: Optional[list[str]] = None
-    attendance_count: Optional[int] = None
     is_favorited: Optional[bool] = None
-    is_attending: Optional[bool] = None
 
 
 class MarketListResponse(BaseModel):

@@ -16,5 +16,4 @@ class DashboardStatsResponse(BaseModel):
     businesses_count: int
     markets_count: int
     applications: ApplicationStats
-    attendances_count: int
     reviews_written_count: int

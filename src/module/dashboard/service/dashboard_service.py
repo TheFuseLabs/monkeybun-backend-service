@@ -8,7 +8,6 @@ from src.database.postgres.models.db_models import (
     ApplicationStatus,
     Business,
     Market,
-    MarketAttendance,
     Review,
 )
 from src.module.dashboard.schema.dashboard_schema import (
@@ -59,12 +58,6 @@ class DashboardService:
                 elif app.status == ApplicationStatus.confirmed:
                     applications_confirmed += 1
 
-        attendances_count = db.exec(
-            select(func.count())
-            .select_from(MarketAttendance)
-            .where(MarketAttendance.user_id == user_id)
-        ).one()
-
         reviews_written_count = db.exec(
             select(func.count())
             .select_from(Review)
@@ -77,10 +70,9 @@ class DashboardService:
             applications=ApplicationStats(
                 total=applications_total,
                 applied=applications_applied,
-                accepted=applications_accepted,
-                declined=applications_declined,
-                confirmed=applications_confirmed,
-            ),
-            attendances_count=attendances_count,
-            reviews_written_count=reviews_written_count,
+            accepted=applications_accepted,
+            declined=applications_declined,
+            confirmed=applications_confirmed,
+        ),
+        reviews_written_count=reviews_written_count,
         )

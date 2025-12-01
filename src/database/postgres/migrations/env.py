@@ -20,7 +20,6 @@ from src.database.postgres.models.db_models import (
     Business,  # noqa: F401
     BusinessImage,  # noqa: F401
     Market,  # noqa: F401
-    MarketAttendance,  # noqa: F401
     MarketImage,  # noqa: F401
     Review,  # noqa: F401
     ReviewImage,  # noqa: F401
